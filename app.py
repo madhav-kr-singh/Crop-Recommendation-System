@@ -1,9 +1,10 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
 import numpy as np
 import pickle
 import os
 import asyncio
 import edge_tts
+from translations import t, TRANSLATIONS
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -12,19 +13,36 @@ ms = pickle.load(open(os.path.join(BASE_DIR, "minmaxscaler.pkl"), "rb"))
 
 app = Flask(__name__)
 
-VOICE = "en-US-JennyNeural"
+VOICES = {
+    "en": "en-US-JennyNeural",
+    "hi": "hi-IN-SwaraNeural",
+    "te": "te-IN-MohanNeural",
+    "ta": "ta-IN-PallaviNeural",
+    "kn": "kn-IN-GaganNeural",
+    "mr": "mr-IN-AarohiNeural",
+    "bn": "bn-IN-TanishaaNeural",
+    "gu": "gu-IN-DhwaniNeural",
+    "ml": "ml-IN-SobhanaNeural",
+    "pa": "pa-IN-GurpreetNeural",
+    "or": "or-IN-SubhasiniNeural",
+    "ur": "ur-IN-GulNeural"
+}
 
-async def generate_audio(text, path):
-    communicate = edge_tts.Communicate(text, VOICE)
+async def generate_audio(text, path, voice):
+    communicate = edge_tts.Communicate(text, voice)
     await communicate.save(path)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    lang = request.args.get('lang', 'en')
+    return render_template("index.html", lang=lang, t=t)
 
-@app.route("/predict", methods=["POST"])
+@app.route("/predict", methods=["GET", "POST"])
 def predict():
+    if request.method == "GET":
+        return redirect(url_for("index", lang=request.args.get("lang", "en")))
     try:
+        lang = request.args.get('lang', 'en')
         n = int(request.form["Nitrogen"])
         p = int(request.form["Phosphorus"])
         k = int(request.form["Potassium"])
@@ -37,13 +55,20 @@ def predict():
         features = ms.transform(features)
 
         prediction = model.predict(features)
-        result = f"{prediction[0]} is the best crop to be cultivated right there."
+        crop = prediction[0]
+        result = crop
+
+        # ponytail: dynamic multilingual TTS speech text & voice selection
+        translated_crop = t(crop, lang)
+        recommend_title = t("recommend_title", lang)
+        tts_text = f"{recommend_title} {translated_crop}."
+        voice = VOICES.get(lang, VOICES["en"])
 
         audio_path = os.path.join(BASE_DIR, "static", "result.mp3")
-        asyncio.run(generate_audio(result, audio_path))
+        asyncio.run(generate_audio(tts_text, audio_path, voice))
         print("Audio saved successfully!")
 
-        return render_template("index.html", result=result)
+        return render_template("index.html", result=result,lang=lang, t=t, crop=crop)
 
     except Exception as e:
         print("ERROR:", e)

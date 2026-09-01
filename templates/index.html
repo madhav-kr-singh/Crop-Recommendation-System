@@ -1,128 +1,662 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Crop Recommendation</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-  </head>
+<html lang="{{ lang }}">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crop Recommendation System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    h1 { color: mediumseagreen; text-align: center; }
-    .warning { color: red; font-weight: bold; text-align: center; }
-    .card { margin-left: 410px; margin-top: 20px; color: white; }
-    .container { background: #edf2f7; font-weight: bold; padding-bottom: 10px; border-radius: 15px; }
+    :root {
+      --g5: #16a34a;
+      --g4: #15803d;
+      --g3: #166534;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --inp: #f1f5f9;
+      --tx: #0f172a;
+      --mu: #64748b;
+      --bd: #e2e8f0;
+      --bf: rgba(22, 163, 74, .35);
+      --nav-bg: #ffffff;
+      --nav-border: #e2e8f0;
+      --r: 12px;
+      --sh: 0 1px 12px rgba(0, 0, 0, .07);
+      --tr: 180ms ease;
+      --nav-h: 60px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: Inter, sans-serif;
+      background: var(--bg);
+      color: var(--tx);
+      min-height: 100vh;
+      font-size: 16px;
+      line-height: 1.6
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none
+    }
+
+    /* navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: var(--nav-h);
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--nav-border);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+      padding: 0 clamp(1rem, 4vw, 2.5rem);
+    }
+
+    .navbar__inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 100%;
+    }
+
+    .navbar__brand {
+      font-size: clamp(1rem, 2.5vw, 1.1rem);
+      font-weight: 700;
+      color: var(--g5);
+      letter-spacing: -.02em;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+    }
+
+    /* Custom Select */
+    .custom-select-wrapper {
+      position: relative;
+      user-select: none;
+      z-index: 100;
+    }
+
+    .custom-select {
+      position: relative;
+    }
+
+    .custom-select__trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #f1f5f9;
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+      color: var(--tx);
+      font-family: Inter, sans-serif;
+      font-size: .85rem;
+      font-weight: 500;
+      padding: .4rem .8rem;
+      cursor: pointer;
+      min-width: 130px;
+      transition: border-color var(--tr), box-shadow var(--tr);
+    }
+
+    .custom-select__trigger::after {
+      content: "";
+      width: 1.1em;
+      height: 1.1em;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2316a34a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-size: cover;
+      margin-left: .5rem;
+      transition: transform var(--tr);
+    }
+
+    .custom-select.open .custom-select__trigger::after {
+      transform: rotate(-180deg);
+    }
+
+    .custom-select.open .custom-select__trigger {
+      border-color: var(--g5);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, .15);
+    }
+
+    .custom-select__options {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      width: 100%;
+      background: #fff;
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+      box-shadow: var(--sh);
+      margin-top: .4rem;
+      max-height: 300px;
+      overflow-y: auto;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--tr), visibility var(--tr), transform var(--tr);
+      transform: translateY(-10px);
+    }
+
+    /* ponytail: minimum custom scrollbar to meet lighter slider requirement */
+    .custom-select__options::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-select__options::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-select__options::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .custom-select.open .custom-select__options {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .custom-select__option {
+      display: block;
+      padding: .6rem 1rem;
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--tx);
+      cursor: pointer;
+      transition: background var(--tr), color var(--tr);
+    }
+
+    .custom-select__option:hover {
+      background: var(--g5);
+      color: #fff;
+    }
+
+    .custom-select__option.selected {
+      background: rgba(22, 163, 74, .1);
+      color: var(--g5);
+      font-weight: 700;
+    }
+
+    .custom-select__option.selected:hover {
+      background: var(--g5);
+      color: #fff;
+    }
+
+    /* page */
+    .page {
+      min-height: calc(100vh - var(--nav-h));
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: var(--r);
+      box-shadow: var(--sh);
+      padding: clamp(1.5rem, 4vw, 2.5rem);
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: clamp(1.5rem, 4vw, 2.1rem);
+      font-weight: 700;
+      color: var(--g5);
+      letter-spacing: -.03em;
+      margin-bottom: 2rem;
+      line-height: 1.2;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: 1.25rem;
+      row-gap: 0.25rem;
+      align-items: start;
+      padding-top: 1.5rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: .8rem;
+
+    }
+
+    label {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--mu);
+      letter-spacing: .05em;
+      text-transform: uppercase
+    }
+
+    input[type=number] {
+      background: var(--inp);
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+      color: var(--tx);
+      font-family: Inter, sans-serif;
+      font-size: .95rem;
+      padding: .65rem .9rem;
+      width: 100%;
+      transition: border-color var(--tr), box-shadow var(--tr);
+      -moz-appearance: textfield;
+    }
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none
+    }
+
+    input[type=number]::placeholder {
+      color: #94a3b8
+    }
+
+    input[type=number]:focus {
+      outline: none;
+      border-color: var(--g5);
+      box-shadow: 0 0 0 3px var(--bf)
+    }
+
+    input[type=number]:hover:not(:focus) {
+      border-color: #94a3b8
+    }
+
+    input[type=number].error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, .15)
+    }
+
+    .error-text {
+      color: #ef4444;
+      font-size: .75rem;
+      font-weight: 600;
+      margin-top: .2rem;
+      letter-spacing: .02em;
+      visibility: hidden;
+      height: 1rem;
+      line-height: 1rem
+    }
+
+    input[type=number].error+.error-text {
+      visibility: visible
+    }
+
+    .btn-submit {
+      display: block;
+      width: 100%;
+      padding: .85rem 2rem;
+      height: 45px;
+      background: var(--g5);
+      color: #fff;
+      font-family: Inter, sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: .01em;
+      transition: background var(--tr), transform var(--tr), box-shadow var(--tr);
+      grid-column: span 2;
+      margin-top: 1.75rem;
+    }
+
+    .btn-submit:hover {
+      background: #15803d;
+      box-shadow: 0 4px 20px rgba(22, 163, 74, .35);
+      transform: translateY(-1px)
+    }
+
+    .btn-submit:active {
+      transform: translateY(0)
+    }
+
+    .result-card {
+      margin-top: 2.5rem;
+      background: linear-gradient(145deg, #064e3b 0%, #065f46 100%);
+      border: 1px solid rgba(255, 255, 255, .1);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, .15), inset 0 1px 0 rgba(255, 255, 255, .1);
+      border-radius: 24px;
+      padding: 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: radial-gradient(circle at top, rgba(74, 222, 128, .15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .result-card__header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .2rem;
+      z-index: 1
+    }
+
+    .result-card__label {
+      font-size: .85rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, .7);
+      text-transform: uppercase;
+      letter-spacing: .1em
+    }
+
+    .result-card__crop {
+      font-size: 3.75rem;
+      font-weight: 700;
+      letter-spacing: -.03em;
+      color: #4ade80;
+      background: linear-gradient(to right, #4ade80, #bef264);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+    }
+
+    .result-card__img {
+      width: 100%;
+      max-width: 340px;
+      height: 340px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 4px solid rgba(255, 255, 255, .15);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, .25);
+      z-index: 1;
+      background: #fff;
+    }
+
+    .btn-speak {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .6rem 1.25rem;
+      margin-top: .5rem;
+      background: rgba(255, 255, 255, .1);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 16px;
+      color: #fff;
+      font-family: Inter, sans-serif;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--tr);
+      backdrop-filter: blur(10px);
+      z-index: 1;
+    }
+
+    .btn-speak:hover {
+      background: rgba(255, 255, 255, .2);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, .15)
+    }
+
+    .icon-speak {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    [dir=rtl] label,
+    [dir=rtl] h1,
+    [dir=rtl] .result-card__label {
+      text-align: right
+    }
+
+    [dir=rtl] .navbar__inner {
+      flex-direction: row-reverse
+    }
+
+    [dir=rtl] .custom-select__trigger::after {
+      margin-left: 0;
+      margin-right: .5rem;
+    }
+
+    [dir=rtl] .custom-select__options {
+      text-align: right;
+    }
+
+    @media(max-width:768px) {
+      .form-grid {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .btn-submit {
+        grid-column: span 1
+      }
+    }
+
+    @media(max-width:480px) {
+      .form-grid {
+        grid-template-columns: 1fr
+      }
+
+      .btn-submit {
+        grid-column: span 1;
+        margin-top: .5rem
+      }
+    }
   </style>
+</head>
 
-  <body style="background:#BCBBB8">
+<body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/">Crop Recommendation</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">home</a></li>
-            <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
-            <li class="nav-item"><a class="nav-link disabled">About</a></li>
-          </ul>
-          <form class="d-flex" role="search">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success" type="submit">Search</button>
-          </form>
+  <nav class="navbar" role="navigation" aria-label="Main navigation" dir="{{ 'rtl' if lang == 'ur' else 'ltr' }}">
+    <div class="navbar__inner">
+      <a class="navbar__brand" href="/?lang={{ lang }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22V12" />
+          <path d="M5 3a7 7 0 0 0 7 7 7 7 0 0 0 7-7" />
+          <path d="M5 9a7 7 0 0 0 7 7 7 7 0 0 1 7-7" />
+        </svg>
+        {{ t("brand", lang) }}
+      </a>
+      <div class="custom-select-wrapper"
+        onclick="event.stopPropagation(); this.querySelector('.custom-select').classList.toggle('open')">
+        <div class="custom-select">
+          <div class="custom-select__trigger">
+            <span>{% if lang == 'en' %}English{% endif %}{% if lang == 'hi' %}हिंदी{% endif %}{% if lang == 'te'
+              %}తెలుగు{% endif %}{% if lang == 'ta' %}தமிழ்{% endif %}{% if lang == 'kn' %}ಕನ್ನಡ{% endif %}{% if lang ==
+              'mr' %}मराठी{% endif %}{% if lang == 'bn' %}বাংলা{% endif %}{% if lang == 'gu' %}ગુજરાતી{% endif %}{% if
+              lang == 'ml' %}മലയാളം{% endif %}{% if lang == 'pa' %}ਪੰਜਾਬੀ{% endif %}{% if lang == 'or' %}ଓଡ଼ିଆ{% endif
+              %}{% if lang == 'ur' %}اردو{% endif %}</span>
+          </div>
+          <div class="custom-select__options">
+            <span class="custom-select__option {% if lang == 'en' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=en'">English</span>
+            <span class="custom-select__option {% if lang == 'hi' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=hi'">हिंदी</span>
+            <span class="custom-select__option {% if lang == 'te' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=te'">తెలుగు</span>
+            <span class="custom-select__option {% if lang == 'ta' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=ta'">தமிழ்</span>
+            <span class="custom-select__option {% if lang == 'kn' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=kn'">ಕನ್ನಡ</span>
+            <span class="custom-select__option {% if lang == 'mr' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=mr'">मराठी</span>
+            <span class="custom-select__option {% if lang == 'bn' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=bn'">বাংলা</span>
+            <span class="custom-select__option {% if lang == 'gu' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=gu'">ગુજરાતી</span>
+            <span class="custom-select__option {% if lang == 'ml' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=ml'">മലയാളം</span>
+            <span class="custom-select__option {% if lang == 'pa' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=pa'">ਪੰਜਾਬੀ</span>
+            <span class="custom-select__option {% if lang == 'or' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=or'">ଓଡ଼ିଆ</span>
+            <span class="custom-select__option {% if lang == 'ur' %}selected{% endif %}"
+              onclick="window.location.href='/?lang=ur'">اردو</span>
+          </div>
         </div>
       </div>
-    </nav>
+    </div>
+  </nav>
 
-    <div class="container my-3 mt-3">
-      <h1 class="text-success">Crop Recommendation System <span class="text-success">🌱</span></h1>
+  <div class="page" dir="{{ 'rtl' if lang == 'ur' else 'ltr' }}">
+    <div class="card">
 
-      <form action="/predict" method="POST">
-        <div class="row">
-          <div class="col-md-4">
-            <label for="Nitrogen">Nitrogen</label>
-            <input type="number" id="Nitrogen" name="Nitrogen" placeholder="Enter Nitrogen" class="form-control" required step="1">
-          </div>
-          <div class="col-md-4">
-            <label for="Phosphorus">Phosphorus</label>
-            <input type="number" id="Phosphorus" name="Phosphorus" placeholder="Enter Phosphorus" class="form-control" required step="1">
-          </div>
-          <div class="col-md-4">
-            <label for="Potassium">Potassium</label>
-            <input type="number" id="Potassium" name="Potassium" placeholder="Enter Potassium" class="form-control" required step="1">
-          </div>
-        </div>
+      <h1>{{ t("app_title", lang) }} &#127807;</h1>
 
-        <div class="row mt-4">
-          <div class="col-md-4">
-            <label for="Temperature">Temperature</label>
-            <input type="number" step="any" id="Temperature" name="Temperature" placeholder="Enter Temperature in °C" class="form-control" required>
-          </div>
-          <div class="col-md-4">
-            <label for="Humidity">Humidity</label>
-            <input type="number" step="any" id="Humidity" name="Humidity" placeholder="Enter Humidity in %" class="form-control" required>
-          </div>
-          <div class="col-md-4">
-            <label for="pH">pH</label>
-            <input type="number" step="any" id="Ph" name="Ph" placeholder="Enter pH value" class="form-control" required>
-          </div>
-        </div>
+      <form action="/predict?lang={{ lang }}" method="POST" novalidate id="predictForm">
+        <div class="form-grid">
 
-        <div class="row mt-4">
-          <div class="col-md-4">
-            <label for="Rainfall">Rainfall</label>
-            <input type="number" step="any" id="Rainfall" name="Rainfall" placeholder="Enter Rainfall in mm" class="form-control" required>
+          <div class="field">
+            <label for="Nitrogen">{{ t("nitrogen", lang) }}</label>
+            <input type="number" id="Nitrogen" name="Nitrogen" placeholder="{{ t('enter_nitrogen', lang) }}" required>
+            <span class="error-text">&#9888; Required</span>
           </div>
-        </div>
 
-        <div class="row mt-4">
-          <div class="col-md-12 text-center">
-            <button type="submit" class="btn btn-primary btn-lg">Get Recommendation</button>
+          <div class="field">
+            <label for="Phosphorus">{{ t("phosphorus", lang) }}</label>
+            <input type="number" id="Phosphorus" name="Phosphorus" placeholder="{{ t('enter_phosphorus', lang) }}"
+              required>
+            <span class="error-text">&#9888; Required</span>
           </div>
+
+          <div class="field">
+            <label for="Potassium">{{ t("potassium", lang) }}</label>
+            <input type="number" id="Potassium" name="Potassium" placeholder="{{ t('enter_potassium', lang) }}"
+              required>
+            <span class="error-text">&#9888; Required</span>
+          </div>
+
+          <div class="field">
+            <label for="Temperature">{{ t("temperature", lang) }}</label>
+            <input type="number" step="0.01" id="Temperature" name="Temperature"
+              placeholder="{{ t('enter_temperature', lang) }}" required>
+            <span class="error-text">&#9888; Required</span>
+          </div>
+
+          <div class="field">
+            <label for="Humidity">{{ t("humidity", lang) }}</label>
+            <input type="number" step="0.01" id="Humidity" name="Humidity" placeholder="{{ t('enter_humidity', lang) }}"
+              required>
+            <span class="error-text">&#9888; Required</span>
+          </div>
+
+          <div class="field">
+            <label for="Ph">{{ t("ph", lang) }}</label>
+            <input type="number" step="0.01" id="Ph" name="Ph" placeholder="{{ t('enter_ph', lang) }}" required>
+            <span class="error-text">&#9888; Required</span>
+          </div>
+
+          <div class="field">
+            <label for="Rainfall">{{ t("rainfall", lang) }}</label>
+            <input type="number" step="0.01" id="Rainfall" name="Rainfall" placeholder="{{ t('enter_rainfall', lang) }}"
+              required>
+            <span class="error-text">&#9888; Required</span>
+          </div>
+
+          <button type="submit" class="btn-submit">{{ t("get_recommendation", lang) }}</button>
         </div>
       </form>
 
       {% if result %}
-      <div class="card bg-dark" style="width: 18rem;">
-        <img src="{{url_for('static', filename='img.jpg')}}" class="card-img-top" alt="...">
-        <div class="card-body">
-          <h5 class="card-title">Recommend Crop for cultivation is:</h5>
-          <p class="card-text">{{ result }}</p>
-
-          <!-- Natural female voice audio player -->
-          <audio id="result-audio" style="display:none;">
-            <source src="{{ url_for('static', filename='result.mp3') }}?t={{ range(1, 99999) | random }}" type="audio/mpeg">
-          </audio>
-
-          <!-- Speak Again button -->
-          <br>
-          <button class="btn btn-outline-light btn-sm mt-2" onclick="replayAudio()">🔊 Speak Again</button>
-
+      <div class="result-card" role="region" aria-label="Recommendation result">
+        <div class="result-card__header">
+          <span class="result-card__label">{{ t("recommend_title", lang) }}</span>
+          <span class="result-card__crop">{{ t(result, lang) }}</span>
+        </div>
+        <img src="{{ url_for('static', filename=crop + '.webp') }}" class="result-card__img" alt="Recommended crop">
+        <audio id="result-audio" style="display:none;">
+          <source src="{{ url_for('static', filename='result.mp3') }}" type="audio/mpeg">
+        </audio>
+        <div class="result-card__actions">
+          <button class="btn-speak" onclick="replayAudio()" type="button">
+            <svg class="icon-speak" viewBox="0 0 24 24" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            </svg>
+            {{ t("btn_speak_again", lang) }}
+          </button>
+          <button class="btn-speak" onclick="window.location.href='/?lang={{ lang }}'" type="button">
+            <svg class="icon-speak" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M1 4v6h6" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            {{ t("btn_check_again", lang) }}
+          </button>
         </div>
       </div>
-
-      <script>
-        const audio = document.getElementById("result-audio");
-
-        // Auto play when page loads
-        window.addEventListener("load", function () {
-          audio.play().catch(() => {
-            console.log("Autoplay blocked — press play button.");
-          });
-        });
-
-        // Speak Again — replays from beginning
-        function replayAudio() {
-          audio.pause();
-          audio.currentTime = 0;
-          audio.play();
-        }
-      </script>
       {% endif %}
 
     </div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-  </body>
+  <script>
+    const audio = document.getElementById('result-audio');
+    const resultCard = document.querySelector('.result-card');
+    if (resultCard) { resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    if (audio) { window.addEventListener('load', () => audio.play().catch(() => { })); }
+    function replayAudio() {
+      if (!audio) return;
+      audio.pause(); audio.currentTime = 0; audio.play();
+    }
+
+    // Form Validation
+    const form = document.getElementById('predictForm');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        let valid = true;
+        form.querySelectorAll('input[required]').forEach(input => {
+          if (!input.value.trim()) {
+            input.classList.add('error');
+            valid = false;
+          } else {
+            input.classList.remove('error');
+          }
+        });
+        if (!valid) e.preventDefault();
+      });
+
+      form.querySelectorAll('input[required]').forEach(input => {
+        input.addEventListener('input', () => input.classList.remove('error'));
+      });
+    }
+
+    // Close custom dropdown on outside click
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select.open').forEach(el => el.classList.remove('open'));
+      }
+    });
+  </script>
+
+</body>
+
 </html>

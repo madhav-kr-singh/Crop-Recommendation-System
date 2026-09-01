@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.venv/
+.idea/
+.vscode/
+.ipynb_checkpoints/
+static/*.mp3
+.DS_Store
+Thumbs.db
