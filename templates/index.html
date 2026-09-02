@@ -241,7 +241,7 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       column-gap: 1.25rem;
-      row-gap: 0.25rem;
+      row-gap: 1.5rem;
       align-items: start;
       padding-top: 1.5rem;
     }
@@ -249,8 +249,72 @@
     .field {
       display: flex;
       flex-direction: column;
-      gap: .8rem;
+      gap: .5rem;
+      position: relative;
+    }
 
+    .field__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .unit-select-wrapper {
+      position: relative;
+      user-select: none;
+      z-index: 50;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .field:has(.custom-select.open),
+    .field__header:has(.custom-select.open),
+    .unit-select-wrapper:has(.custom-select.open),
+    .custom-select.open {
+      z-index: 9999 !important;
+    }
+
+    .custom-select__options {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      min-width: 110px;
+      width: max-content;
+      max-width: 90vw;
+      background: #fff;
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, .18);
+      max-height: 280px;
+      overflow-y: auto;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--tr), visibility var(--tr), transform var(--tr);
+      transform: translateY(-8px);
+      z-index: 99999 !important;
+    }
+
+    .unit-select-wrapper .custom-select__trigger {
+      font-size: .75rem;
+      font-weight: 600;
+      padding: .2rem .55rem;
+      min-width: 80px;
+      border-radius: 6px;
+    }
+
+    .unit-select-wrapper .custom-select__options {
+      min-width: 110px;
+      font-size: .78rem;
+      right: 0;
+      top: calc(100% + 4px);
+      z-index: 99999 !important;
+    }
+
+    .unit-select-wrapper .custom-select__option {
+      padding: .4rem .7rem;
+      font-size: .78rem;
     }
 
     label {
@@ -314,17 +378,44 @@
 
     .error-text {
       color: #ef4444;
-      font-size: .75rem;
-      font-weight: 600;
-      margin-top: .2rem;
-      letter-spacing: .02em;
+      font-size: .68rem;
+      font-weight: 500;
+      letter-spacing: .01em;
+      position: absolute;
+      top: calc(100% + 3px);
+      left: 0;
+      right: 0;
+      opacity: 0;
       visibility: hidden;
-      height: 1rem;
-      line-height: 1rem
+      transition: opacity var(--tr), visibility var(--tr);
+      line-height: 1.25;
+      z-index: 10;
+      pointer-events: none;
     }
 
-    input[type=number].error+.error-text {
-      visibility: visible
+    input[type=number].error+.error-text,
+    .error-text.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .alert-error {
+      background-color: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      padding: 0.85rem 1.1rem;
+      border-radius: 10px;
+      margin-bottom: 1.25rem;
+      font-size: 0.88rem;
+    }
+
+    .alert-error ul {
+      margin-top: 0.35rem;
+      padding-left: 1.2rem;
+    }
+
+    .alert-error li {
+      margin-bottom: 0.2rem;
     }
 
     .btn-submit {
@@ -343,7 +434,8 @@
       letter-spacing: .01em;
       transition: background var(--tr), transform var(--tr), box-shadow var(--tr);
       grid-column: span 2;
-      margin-top: 1.75rem;
+      align-self: end;
+      margin-top: 0;
     }
 
     .btn-submit:hover {
@@ -591,55 +683,139 @@
 
       <h1>{{ t("app_title", lang) }} &#127807;</h1>
 
+      <!-- {% if errors %}
+      <div class="alert-error" role="alert">
+        <strong>Invalid Input Values:</strong>
+        <ul>
+          {% for field, err in errors.items() %}
+          <li>{{ err }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %} -->
+
       <form action="/predict?lang={{ lang }}" method="POST" id="predictForm" novalidate>
         <div class="form-grid">
 
           <div class="field">
-            <label for="Nitrogen">{{ t("nitrogen", lang) }}</label>
-            <input type="number" id="Nitrogen" name="Nitrogen" min="0" placeholder="{{ t('enter_nitrogen', lang) }}" required>
-            <span class="error-text">&#9888; {{ t("err_nitrogen", lang) }}</span>
+            <div class="field__header">
+              <label for="Nitrogen">{{ t("nitrogen", lang) }}</label>
+              <div class="custom-select-wrapper unit-select-wrapper">
+                <div class="custom-select" id="unitSelect_Nitrogen">
+                  <div class="custom-select__trigger unit-select__trigger" role="button" tabindex="0">
+                    <span>{% if form_data and form_data.get('unit_Nitrogen') == 'kg_acre' %}kg/acre{% elif form_data and form_data.get('unit_Nitrogen') == 'ppm' %}ppm{% else %}kg/ha{% endif %}</span>
+                  </div>
+                  <div class="custom-select__options">
+                    <span class="custom-select__option {% if not form_data or form_data.get('unit_Nitrogen') == 'default' %}selected{% endif %}" data-value="default" data-text="kg/ha">kg/ha</span>
+                    <span class="custom-select__option {% if form_data and form_data.get('unit_Nitrogen') == 'kg_acre' %}selected{% endif %}" data-value="kg_acre" data-text="kg/acre">kg/acre</span>
+                    <span class="custom-select__option {% if form_data and form_data.get('unit_Nitrogen') == 'ppm' %}selected{% endif %}" data-value="ppm" data-text="ppm">ppm</span>
+                  </div>
+                </div>
+                <input type="hidden" name="unit_Nitrogen" id="hidden_unit_Nitrogen" value="{{ form_data.get('unit_Nitrogen', 'default') if form_data else 'default' }}">
+              </div>
+            </div>
+            <input type="number" id="Nitrogen" name="Nitrogen" min="0" max="140" placeholder="{{ t('enter_nitrogen', lang) }}" value="{{ form_data.get('Nitrogen', '') if form_data else '' }}" class="{% if errors and errors.get('Nitrogen') %}error{% endif %}" required>
+            <span class="error-text {% if errors and errors.get('Nitrogen') %}visible{% endif %}">&#9888; {{ errors.get('Nitrogen') if (errors and errors.get('Nitrogen')) else t("err_nitrogen", lang) }}</span>
           </div>
 
           <div class="field">
-            <label for="Phosphorus">{{ t("phosphorus", lang) }}</label>
-            <input type="number" id="Phosphorus" name="Phosphorus" min="0" placeholder="{{ t('enter_phosphorus', lang) }}"
-              required>
-           <span class="error-text">&#9888; {{ t("err_phosphorus", lang) }}</span>
+            <div class="field__header">
+              <label for="Phosphorus">{{ t("phosphorus", lang) }}</label>
+              <div class="custom-select-wrapper unit-select-wrapper">
+                <div class="custom-select" id="unitSelect_Phosphorus">
+                  <div class="custom-select__trigger unit-select__trigger" role="button" tabindex="0">
+                    <span>{% if form_data and form_data.get('unit_Phosphorus') == 'p2o5' %}kg/ha (P₂O₅){% elif form_data and form_data.get('unit_Phosphorus') == 'ppm' %}ppm{% elif form_data and form_data.get('unit_Phosphorus') == 'kg_acre' %}kg/acre{% else %}kg/ha (P){% endif %}</span>
+                  </div>
+                  <div class="custom-select__options">
+                    <span class="custom-select__option {% if not form_data or form_data.get('unit_Phosphorus') == 'default' %}selected{% endif %}" data-value="default" data-text="kg/ha (P)">kg/ha (P)</span>
+                    <span class="custom-select__option {% if form_data and form_data.get('unit_Phosphorus') == 'p2o5' %}selected{% endif %}" data-value="p2o5" data-text="kg/ha (P₂O₅)">kg/ha (P₂O₅)</span>
+                    <span class="custom-select__option {% if form_data and form_data.get('unit_Phosphorus') == 'ppm' %}selected{% endif %}" data-value="ppm" data-text="ppm">ppm</span>
+                    <span class="custom-select__option {% if form_data and form_data.get('unit_Phosphorus') == 'kg_acre' %}selected{% endif %}" data-value="kg_acre" data-text="kg/acre">kg/acre</span>
+                  </div>
+                </div>
+                <input type="hidden" name="unit_Phosphorus" id="hidden_unit_Phosphorus" value="{{ form_data.get('unit_Phosphorus', 'default') if form_data else 'default' }}">
+              </div>
+            </div>
+            <input type="number" id="Phosphorus" name="Phosphorus" min="5" max="145" placeholder="{{ t('enter_phosphorus', lang) }}" value="{{ form_data.get('Phosphorus', '') if form_data else '' }}" class="{% if errors and errors.get('Phosphorus') %}error{% endif %}" required>
+            <span class="error-text {% if errors and errors.get('Phosphorus') %}visible{% endif %}">&#9888; {{ errors.get('Phosphorus') if (errors and errors.get('Phosphorus')) else t("err_phosphorus", lang) }}</span>
           </div>
 
           <div class="field">
-            <label for="Potassium">{{ t("potassium", lang) }}</label>
-            <input type="number" id="Potassium" name="Potassium" min="0" placeholder="{{ t('enter_potassium', lang) }}"
-              required>
-            <span class="error-text">&#9888; {{ t("err_potassium", lang) }}</span>
+            <div class="field__header">
+              <label for="Potassium">{{ t("potassium", lang) }}</label>
+              <div class="custom-select-wrapper unit-select-wrapper">
+                <div class="custom-select" id="unitSelect_Potassium">
+                  <div class="custom-select__trigger unit-select__trigger" role="button" tabindex="0">
+                    <span>{% if form_data and form_data.get('unit_Potassium') == 'k2o' %}kg/ha (K₂O){% elif form_data and form_data.get('unit_Potassium') == 'ppm' %}ppm{% elif form_data and form_data.get('unit_Potassium') == 'kg_acre' %}kg/acre{% else %}kg/ha (K){% endif %}</span>
+                  </div>
+                  <div class="custom-select__options">
+                    <span class="custom-select__option {% if not form_data or form_data.get('unit_Potassium') == 'default' %}selected{% endif %}" data-value="default" data-text="kg/ha (K)">kg/ha (K)</span>
+                    <span class="custom-select__option {% if form_data and form_data.get('unit_Potassium') == 'k2o' %}selected{% endif %}" data-value="k2o" data-text="kg/ha (K₂O)">kg/ha (K₂O)</span>
+                    <span class="custom-select__option {% if form_data and form_data.get('unit_Potassium') == 'ppm' %}selected{% endif %}" data-value="ppm" data-text="ppm">ppm</span>
+                    <span class="custom-select__option {% if form_data and form_data.get('unit_Potassium') == 'kg_acre' %}selected{% endif %}" data-value="kg_acre" data-text="kg/acre">kg/acre</span>
+                  </div>
+                </div>
+                <input type="hidden" name="unit_Potassium" id="hidden_unit_Potassium" value="{{ form_data.get('unit_Potassium', 'default') if form_data else 'default' }}">
+              </div>
+            </div>
+            <input type="number" id="Potassium" name="Potassium" min="5" max="205" placeholder="{{ t('enter_potassium', lang) }}" value="{{ form_data.get('Potassium', '') if form_data else '' }}" class="{% if errors and errors.get('Potassium') %}error{% endif %}" required>
+            <span class="error-text {% if errors and errors.get('Potassium') %}visible{% endif %}">&#9888; {{ errors.get('Potassium') if (errors and errors.get('Potassium')) else t("err_potassium", lang) }}</span>
           </div>
 
           <div class="field">
-            <label for="Temperature">{{ t("temperature", lang) }}</label>
-            <input type="number" step="0.01" id="Temperature" name="Temperature" min="0"
-              placeholder="{{ t('enter_temperature', lang) }}" required>
-           <span class="error-text">&#9888; {{ t("err_temperature", lang) }}</span>
-
+            <div class="field__header">
+              <label for="Temperature">{{ t("temperature", lang) }}</label>
+              <div class="custom-select-wrapper unit-select-wrapper">
+                <div class="custom-select" id="unitSelect_Temperature">
+                  <div class="custom-select__trigger unit-select__trigger" role="button" tabindex="0">
+                    <span>{% if form_data and form_data.get('unit_Temperature') == 'fahrenheit' %}°F{% else %}°C{% endif %}</span>
+                  </div>
+                  <div class="custom-select__options">
+                    <span class="custom-select__option {% if not form_data or form_data.get('unit_Temperature') == 'default' %}selected{% endif %}" data-value="default" data-text="°C">°C</span>
+                    <span class="custom-select__option {% if form_data and form_data.get('unit_Temperature') == 'fahrenheit' %}selected{% endif %}" data-value="fahrenheit" data-text="°F">°F</span>
+                  </div>
+                </div>
+                <input type="hidden" name="unit_Temperature" id="hidden_unit_Temperature" value="{{ form_data.get('unit_Temperature', 'default') if form_data else 'default' }}">
+              </div>
+            </div>
+            <input type="number" step="0.01" id="Temperature" name="Temperature" min="8" max="44" placeholder="{{ t('enter_temperature', lang) }}" value="{{ form_data.get('Temperature', '') if form_data else '' }}" class="{% if errors and errors.get('Temperature') %}error{% endif %}" required>
+            <span class="error-text {% if errors and errors.get('Temperature') %}visible{% endif %}">&#9888; {{ errors.get('Temperature') if (errors and errors.get('Temperature')) else t("err_temperature", lang) }}</span>
           </div>
 
           <div class="field">
-            <label for="Humidity">{{ t("humidity", lang) }}</label>
-            <input type="number" step="0.01" id="Humidity" name="Humidity" min="0" placeholder="{{ t('enter_humidity', lang) }}"
-              required>
-           <span class="error-text">&#9888; {{ t("err_humidity", lang) }}</span>
+            <div class="field__header">
+              <label for="Humidity">{{ t("humidity", lang) }}</label>
+            </div>
+            <input type="number" step="0.01" id="Humidity" name="Humidity" min="0" max="100" placeholder="{{ t('enter_humidity', lang) }}" value="{{ form_data.get('Humidity', '') if form_data else '' }}" class="{% if errors and errors.get('Humidity') %}error{% endif %}" required>
+            <span class="error-text {% if errors and errors.get('Humidity') %}visible{% endif %}">&#9888; {{ errors.get('Humidity') if (errors and errors.get('Humidity')) else t("err_humidity", lang) }}</span>
           </div>
 
           <div class="field">
-            <label for="Ph">{{ t("ph", lang) }}</label>
-            <input type="number" step="0.01" id="Ph" name="Ph" min="0" placeholder="{{ t('enter_ph', lang) }}" required>
-           <span class="error-text">&#9888; {{ t("err_ph", lang) }}</span>
+            <div class="field__header">
+              <label for="Ph">{{ t("ph", lang) }}</label>
+            </div>
+            <input type="number" step="0.01" id="Ph" name="Ph" min="3.5" max="10" placeholder="{{ t('enter_ph', lang) }}" value="{{ form_data.get('Ph', '') if form_data else '' }}" class="{% if errors and errors.get('Ph') %}error{% endif %}" required>
+            <span class="error-text {% if errors and errors.get('Ph') %}visible{% endif %}">&#9888; {{ errors.get('Ph') if (errors and errors.get('Ph')) else t("err_ph", lang) }}</span>
           </div>
 
           <div class="field">
-            <label for="Rainfall">{{ t("rainfall", lang) }}</label>
-            <input type="number" step="0.01" id="Rainfall" name="Rainfall" min="0" placeholder="{{ t('enter_rainfall', lang) }}"
-              required>
-            <span class="error-text">&#9888; {{ t("err_rainfall", lang) }}</span>
+            <div class="field__header">
+              <label for="Rainfall">{{ t("rainfall", lang) }}</label>
+              <div class="custom-select-wrapper unit-select-wrapper">
+                <div class="custom-select" id="unitSelect_Rainfall">
+                  <div class="custom-select__trigger unit-select__trigger" role="button" tabindex="0">
+                    <span>{% if form_data and form_data.get('unit_Rainfall') == 'annual' %}mm/year{% else %}mm/month{% endif %}</span>
+                  </div>
+                  <div class="custom-select__options">
+                    <span class="custom-select__option {% if not form_data or form_data.get('unit_Rainfall') == 'default' %}selected{% endif %}" data-value="default" data-text="mm/month">mm/month</span>
+                    <span class="custom-select__option {% if form_data and form_data.get('unit_Rainfall') == 'annual' %}selected{% endif %}" data-value="annual" data-text="mm/year">mm/year</span>
+                  </div>
+                </div>
+                <input type="hidden" name="unit_Rainfall" id="hidden_unit_Rainfall" value="{{ form_data.get('unit_Rainfall', 'default') if form_data else 'default' }}">
+              </div>
+            </div>
+            <input type="number" step="0.01" id="Rainfall" name="Rainfall" min="20" max="300" placeholder="{{ t('enter_rainfall', lang) }}" value="{{ form_data.get('Rainfall', '') if form_data else '' }}" class="{% if errors and errors.get('Rainfall') %}error{% endif %}" required>
+            <span class="error-text {% if errors and errors.get('Rainfall') %}visible{% endif %}">&#9888; {{ errors.get('Rainfall') if (errors and errors.get('Rainfall')) else t("err_rainfall", lang) }}</span>
           </div>
 
           <button type="submit" class="btn-submit">{{ t("get_recommendation", lang) }}</button>
@@ -707,7 +883,13 @@
       });
 
       form.querySelectorAll('input[type=number]').forEach(input => {
-        input.addEventListener('input', () => input.classList.remove('error'));
+        input.addEventListener('input', () => {
+          input.classList.remove('error');
+          const errorText = input.parentNode.querySelector('.error-text');
+          if (errorText) errorText.classList.remove('visible');
+          const alertError = document.querySelector('.alert-error');
+          if (alertError) alertError.style.display = 'none';
+        });
         // ponytail: prevent minus sign, 'e', and '+' keystrokes
         input.addEventListener('keydown', (e) => {
           if (['-', 'e', 'E', '+'].includes(e.key)) e.preventDefault();
@@ -715,29 +897,118 @@
       });
     }
 
-    // ponytail: robust dropdown toggle & option handling for mobile & desktop
-    const selectWrapper = document.getElementById('langSelectWrapper') || document.querySelector('.custom-select-wrapper');
-    const customSelect = document.getElementById('langSelect') || document.querySelector('.custom-select');
+    // Dynamic Unit Selection Configuration Handler
+    const UNIT_CONFIGS = {
+      unit_Nitrogen: {
+        default: { min: 0, max: 140, placeholder: 'e.g. 50 (0–140 kg/ha)', unitLabel: '[kg/ha]' },
+        kg_acre: { min: 0, max: 56.6, placeholder: 'e.g. 20 (0–56 kg/acre)', unitLabel: '[kg/acre]' },
+        ppm: { min: 0, max: 62.5, placeholder: 'e.g. 22 (0–62 ppm)', unitLabel: '[ppm]' }
+      },
+      unit_Phosphorus: {
+        default: { min: 5, max: 145, placeholder: 'e.g. 50 (5–145 kg/ha)', unitLabel: '[kg/ha P]' },
+        p2o5: { min: 11.4, max: 332, placeholder: 'e.g. 115 (11–332 kg/ha P₂O₅)', unitLabel: '[kg/ha P₂O₅]' },
+        ppm: { min: 2.2, max: 64.7, placeholder: 'e.g. 22 (2–64 ppm)', unitLabel: '[ppm]' },
+        kg_acre: { min: 2, max: 58.7, placeholder: 'e.g. 20 (2–58 kg/acre)', unitLabel: '[kg/acre]' }
+      },
+      unit_Potassium: {
+        default: { min: 5, max: 205, placeholder: 'e.g. 50 (5–205 kg/ha)', unitLabel: '[kg/ha K]' },
+        k2o: { min: 6, max: 247, placeholder: 'e.g. 60 (6–247 kg/ha K₂O)', unitLabel: '[kg/ha K₂O]' },
+        ppm: { min: 2.2, max: 91.5, placeholder: 'e.g. 22 (2–91 ppm)', unitLabel: '[ppm]' },
+        kg_acre: { min: 2, max: 83, placeholder: 'e.g. 20 (2–83 kg/acre)', unitLabel: '[kg/acre]' }
+      },
+      unit_Temperature: {
+        default: { min: 8, max: 44, placeholder: 'e.g. 25.5 (9–44 °C)', unitLabel: '(°C)' },
+        fahrenheit: { min: 46.4, max: 111.2, placeholder: 'e.g. 78 (46–111 °F)', unitLabel: '(°F)' }
+      },
+      unit_Rainfall: {
+        default: { min: 20, max: 300, placeholder: 'e.g. 100 (20–300 mm/month)', unitLabel: '(mm/month)' },
+        annual: { min: 240, max: 3600, placeholder: 'e.g. 1200 (240–3600 mm/year)', unitLabel: '(mm/year)' }
+      }
+    };
 
-    if (selectWrapper && customSelect) {
-      selectWrapper.addEventListener('click', function (e) {
-        if (e.target.closest('.custom-select__option')) return;
-        e.stopPropagation();
-        customSelect.classList.toggle('open');
-      });
+    function updateUnitUI(unitName, val) {
+      const fieldName = unitName.replace('unit_', '');
+      const input = document.getElementById(fieldName);
+      const hiddenInp = document.getElementById('hidden_' + unitName);
+      const fieldDiv = hiddenInp ? hiddenInp.closest('.field') : null;
+      const label = fieldDiv ? fieldDiv.querySelector('label') : null;
+      const cfg = UNIT_CONFIGS[unitName] ? UNIT_CONFIGS[unitName][val] : null;
+
+      if (cfg) {
+        if (input) {
+          input.min = cfg.min;
+          input.max = cfg.max;
+          input.placeholder = cfg.placeholder;
+        }
+        if (label && cfg.unitLabel) {
+          if (!label.dataset.baseText) {
+            label.dataset.baseText = label.innerText.replace(/\s*\[.*?\]/g, '').replace(/\s*\(.*?\)/g, '').trim();
+          }
+          label.innerText = label.dataset.baseText + ' ' + cfg.unitLabel;
+        }
+      }
     }
 
-    document.querySelectorAll('.custom-select__option').forEach(function (opt) {
-      opt.addEventListener('click', function (e) {
+    // Custom Dropdown Handler for Language and Units
+    document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+      const customSel = wrapper.querySelector('.custom-select');
+      const trigger = wrapper.querySelector('.custom-select__trigger');
+      const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+      const options = wrapper.querySelectorAll('.custom-select__option');
+      const parentField = wrapper.closest('.field');
+
+      wrapper.addEventListener('click', function (e) {
+        if (e.target.closest('.custom-select__option')) return;
         e.stopPropagation();
+        document.querySelectorAll('.custom-select.open').forEach(el => {
+          if (el !== customSel) {
+            el.classList.remove('open');
+            const f = el.closest('.field');
+            if (f) f.style.zIndex = '';
+          }
+        });
+        if (customSel) {
+          const isOpen = customSel.classList.toggle('open');
+          if (parentField) parentField.style.zIndex = isOpen ? '9999' : '';
+        }
       });
+
+      if (options) {
+        options.forEach(opt => {
+          opt.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (hiddenInput) {
+              const val = this.dataset.value;
+              const text = this.dataset.text;
+              if (trigger && trigger.querySelector('span')) {
+                trigger.querySelector('span').innerText = text;
+              }
+              options.forEach(o => o.classList.remove('selected'));
+              this.classList.add('selected');
+              hiddenInput.value = val;
+              updateUnitUI(hiddenInput.name, val);
+            }
+            if (customSel) {
+              customSel.classList.remove('open');
+              if (parentField) parentField.style.zIndex = '';
+            }
+          });
+        });
+      }
     });
 
-    // Close custom dropdown on outside click
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest('.custom-select-wrapper')) {
-        document.querySelectorAll('.custom-select.open').forEach(el => el.classList.remove('open'));
-      }
+    // Initial sync for unit labels on load
+    document.querySelectorAll('.unit-select-wrapper input[type="hidden"]').forEach(inp => {
+      updateUnitUI(inp.name, inp.value);
+    });
+
+    // Close custom dropdowns when clicking anywhere outside
+    document.addEventListener('click', function () {
+      document.querySelectorAll('.custom-select.open').forEach(el => {
+        el.classList.remove('open');
+        const f = el.closest('.field');
+        if (f) f.style.zIndex = '';
+      });
     });
   </script>
 

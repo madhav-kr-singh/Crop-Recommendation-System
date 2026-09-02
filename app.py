@@ -32,6 +32,65 @@ async def generate_audio(text, path, voice):
     communicate = edge_tts.Communicate(text, voice)
     await communicate.save(path)
 
+# ponytail: strict agricultural validation bounds matching model training envelope
+VALIDATION_BOUNDS = {
+    "Nitrogen":    (0.0,  140.0, "kg/ha"),
+    "Phosphorus":  (5.0,  145.0, "kg/ha"),
+    "Potassium":   (5.0,  205.0, "kg/ha"),
+    "Temperature": (8.0,  44.0,  "°C"),
+    "Humidity":    (0.0,  100.0, "%"),
+    "Ph":          (3.5,  10.0,  "pH"),
+    "Rainfall":    (20.0, 300.0, "mm/month"),
+}
+
+def convert_input_value(field, val, unit_type="default"):
+    """
+    Convert real-world farmer lab inputs / units into model base metric units:
+    - P2O5 -> elemental P (x 0.4364)
+    - K2O -> elemental K (x 0.8302)
+    - ppm (mg/kg) -> kg/ha (x 2.24)
+    - kg/acre -> kg/ha (x 2.471)
+    - °F -> °C ((°F - 32) * 5/9)
+    - inches -> mm (x 25.4)
+    - annual rainfall -> monthly average (/ 12)
+    """
+    u = (unit_type or "").lower().strip()
+    if u in ("p2o5",) and field == "Phosphorus":
+        val *= 0.4364
+    elif u in ("k2o",) and field == "Potassium":
+        val *= 0.8302
+    elif u in ("ppm", "mg/kg") and field in ("Nitrogen", "Phosphorus", "Potassium"):
+        val *= 2.24
+    elif u in ("kg/acre", "kg_acre") and field in ("Nitrogen", "Phosphorus", "Potassium"):
+        val *= 2.471
+    elif u in ("f", "fahrenheit", "°f") and field == "Temperature":
+        val = (val - 32.0) * 5.0 / 9.0
+    elif u in ("in", "inch", "inches") and field == "Rainfall":
+        val *= 25.4
+    elif u in ("annual", "yearly") and field == "Rainfall":
+        val /= 12.0
+    return val
+
+def validate_inputs(form_data):
+    errors = {}
+    parsed = {}
+    for field, (lo, hi, unit) in VALIDATION_BOUNDS.items():
+        raw = form_data.get(field, "").strip()
+        if not raw:
+            errors[field] = f"{field} is required."
+            continue
+        try:
+            val = float(raw)
+            unit_type = form_data.get(f"unit_{field}", "default")
+            converted_val = convert_input_value(field, val, unit_type)
+            if not (lo <= converted_val <= hi):
+                errors[field] = f"{field} must be between {lo:g} and {hi:g} {unit}. (Entered: {val:g})"
+            else:
+                parsed[field] = converted_val
+        except ValueError:
+            errors[field] = f"Please enter a valid number for {field}."
+    return errors, parsed
+
 @app.route("/")
 def index():
     lang = request.args.get('lang', 'en')
@@ -41,15 +100,20 @@ def index():
 def predict():
     if request.method == "GET":
         return redirect(url_for("index", lang=request.args.get("lang", "en")))
+    
+    lang = request.args.get('lang', 'en')
+    errors, parsed = validate_inputs(request.form)
+    if errors:
+        return render_template("index.html", errors=errors, form_data=request.form, lang=lang, t=t), 400
+
     try:
-        lang = request.args.get('lang', 'en')
-        n = int(request.form["Nitrogen"])
-        p = int(request.form["Phosphorus"])
-        k = int(request.form["Potassium"])
-        temp = float(request.form["Temperature"])
-        humidity = float(request.form["Humidity"])
-        ph = float(request.form["Ph"])
-        rainfall = float(request.form["Rainfall"])
+        n = parsed["Nitrogen"]
+        p = parsed["Phosphorus"]
+        k = parsed["Potassium"]
+        temp = parsed["Temperature"]
+        humidity = parsed["Humidity"]
+        ph = parsed["Ph"]
+        rainfall = parsed["Rainfall"]
 
         features = np.array([[n, p, k, temp, humidity, ph, rainfall]])
         features = ms.transform(features)
@@ -68,7 +132,7 @@ def predict():
         asyncio.run(generate_audio(tts_text, audio_path, voice))
         print("Audio saved successfully!")
 
-        return render_template("index.html", result=result,lang=lang, t=t, crop=crop)
+        return render_template("index.html", result=result, lang=lang, t=t, crop=crop, form_data=request.form)
 
     except Exception as e:
         print("ERROR:", e)

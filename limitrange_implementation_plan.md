@@ -1,4 +1,3 @@
-
 # AgriSense — Input Contract Fix
 
 ## Goal
@@ -10,8 +9,8 @@ Fix the broken input contract: add `kg/ha` units to N/P/K labels, `mm/month` to 
 
 ## Tasks
 
-- [ ] **Task 1 — `app.py`: Add `VALIDATION_BOUNDS` + `validate_inputs()` + wire into `/predict`**Insert after line 12 (after scaler load). Call `validate_inputs()` at top of `predict()` before `ms.transform()`. Return 400 with field errors on failure.→ Verify: `curl -X POST http://localhost:5002/predict -d "Nitrogen=600&..."` returns 400 with error message.
-- [ ] **Task 2 — `translations.py` English block (lines 10–23): Update N/P/K labels + all placeholders**
+- [x] **Task 1 — `app.py`: Add `VALIDATION_BOUNDS` + `validate_inputs()` + wire into `/predict`**Insert after line 12 (after scaler load). Call `validate_inputs()` at top of `predict()` before `ms.transform()`. Return 400 with field errors on failure.→ Verify: `curl -X POST http://localhost:5002/predict -d "Nitrogen=600&..."` returns 400 with error message.
+- [x] **Task 2 — `translations.py` English block (lines 10–23): Update N/P/K labels + all placeholders**
 
   - `"nitrogen"` → `"Nitrogen (N) [kg/ha]"`
   - `"enter_nitrogen"` → `"e.g. 50  (0–140 kg/ha)"`
@@ -25,13 +24,13 @@ Fix the broken input contract: add `kg/ha` units to N/P/K labels, `mm/month` to 
   - `"enter_rainfall"` → `"e.g. 100  (20–300 mm/month)"`
   - `"rainfall"` → `"Monthly Rainfall (mm)"`
     → Verify: Reload `http://localhost:5002` — English placeholders show ranges with units.
-- [ ] **Task 3 — `translations.py` all 11 other language blocks: update N/P/K unit suffix + rainfall key**For each language (`hi`, `te`, `ta`, `kn`, `mr`, `bn`, `gu`, `ml`, `pa`, `or`, `ur`):
+- [x] **Task 3 — `translations.py` all 11 other language blocks: update N/P/K unit suffix + rainfall key**For each language (`hi`, `te`, `ta`, `kn`, `mr`, `bn`, `gu`, `ml`, `pa`, `or`, `ur`):
 
   - Append `[kg/ha]` to the `nitrogen`, `phosphorus`, `potassium` label values
   - Update `enter_nitrogen/phosphorus/potassium` to include `(0–140 kg/ha)` etc.
   - Update `enter_rainfall` to `(20–300 mm/month)`
     → Verify: Switch to Hindi (`?lang=hi`) — N/P/K labels show `[kg/ha]`.
-- [ ] **Task 4 — `templates/index.html`: Add `max` + update `min` on all 7 inputs**Find the 7 `<input type="number">` elements and set:
+- [x] **Task 4 — `templates/index.html`: Add `max` + update `min` on all 7 inputs**Find the 7 `<input type="number">` elements and set:
 
   - Nitrogen: `min="0" max="140"`
   - Phosphorus: `min="5" max="145"`
@@ -56,9 +55,9 @@ Fix the broken input contract: add `kg/ha` units to N/P/K labels, `mm/month` to 
 
 ## Done When
 
-- [ ] `POST /predict` with `Nitrogen=600` returns HTTP 400 with a human-readable error
-- [ ] English UI shows `Nitrogen (N) [kg/ha]` label and `e.g. 50  (0–140 kg/ha)` placeholder
-- [ ] All 7 inputs have `max` attributes; browser rejects out-of-range values natively
+- [x] `POST /predict` with `Nitrogen=600` returns HTTP 400 with a human-readable error
+- [x] English UI shows `Nitrogen (N) [kg/ha]` label and `e.g. 50  (0–140 kg/ha)` placeholder
+- [x] All 7 inputs have `max` attributes; browser rejects out-of-range values natively
 - [ ] `standscaler.pkl` is deleted
 - [ ] Changes are on `origin/main`
 
@@ -70,3 +69,5 @@ Fix the broken input contract: add `kg/ha` units to N/P/K labels, `mm/month` to 
 - Task 3 is repetitive but necessary; do it in one pass with find-and-replace per language block
 - Do NOT touch `model.pkl`, `minmaxscaler.pkl`, or the training notebook
 - If any language block is missing a `nitrogen`/`phosphorus`/`potassium` key, add it; don't skip
+
+ 
