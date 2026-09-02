@@ -296,26 +296,36 @@
       z-index: 99999 !important;
     }
 
+    .unit-select-wrapper .custom-select {
+      position: relative;
+      width: 100%;
+    }
+
     .unit-select-wrapper .custom-select__trigger {
-      font-size: .82rem;
+      font-size: .78rem;
       font-weight: 500;
-      padding: .35rem .7rem;
-      min-width: 105px;
+      padding: .3rem .6rem;
+      min-width: 95px;
+      width: 100%;
+      box-sizing: border-box;
       border-radius: 8px;
     }
 
     .unit-select-wrapper .custom-select__options {
-      min-width: 130px;
-      width: max-content;
-      font-size: .85rem;
+      width: 100%;
+      min-width: 100%;
+      left: 0;
       right: 0;
+      box-sizing: border-box;
+      font-size: .78rem;
       top: calc(100% + 4px);
       z-index: 99999 !important;
     }
 
     .unit-select-wrapper .custom-select__option {
-      padding: .6rem 1rem;
-      font-size: .85rem;
+      padding: .45rem .65rem;
+      font-size: .78rem;
+      white-space: nowrap;
     }
 
     label {
