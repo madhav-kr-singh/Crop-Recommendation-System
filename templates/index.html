@@ -249,6 +249,7 @@
       text-transform: uppercase
     }
 
+    /* ponytail: hide up/down stepper arrows by default, show only when field is focused/clicked */
     input[type=number] {
       background: var(--inp);
       border: 1px solid var(--bd);
@@ -258,15 +259,26 @@
       font-size: .95rem;
       padding: .65rem .9rem;
       width: 100%;
+      -moz-appearance: textfield;
       transition: border-color var(--tr), box-shadow var(--tr);
+    }
+
+    input[type=number]:focus {
+      -moz-appearance: number-input;
     }
 
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
-      -webkit-appearance: inner-spin-button !important;
-      opacity: 1 !important;
-      display: block !important;
+      opacity: 0;
+      pointer-events: none;
       cursor: pointer;
+      transition: opacity var(--tr);
+    }
+
+    input[type=number]:focus::-webkit-inner-spin-button,
+    input[type=number]:focus::-webkit-outer-spin-button {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     input[type=number]::placeholder {
