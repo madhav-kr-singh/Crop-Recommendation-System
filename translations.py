@@ -1,6 +1,6 @@
 TRANSLATIONS = {
     "en": {
-        "brand": "Crop Recommendation",
+        "brand": "AgriSense",
         "nav_home": "Home",
         "nav_contact": "Contact",
         "nav_about": "About",
@@ -58,7 +58,7 @@ TRANSLATIONS = {
 "err_rainfall": "Please enter rainfall (mm).",
     },
     "hi": {
-        "brand": "फ़सल सिफ़ारिश",
+        "brand": "AgriSense",
         "nav_home": "होम",
         "nav_contact": "संपर्क",
         "nav_about": "हमारे बारे में",
@@ -116,7 +116,7 @@ TRANSLATIONS = {
         "err_rainfall": "कृपया वर्षा (मिमी) दर्ज करें।",
     },
     "te": {
-        "brand": "పంట సిఫార్సు",
+        "brand": "AgriSense",
         "nav_home": "హోమ్",
         "nav_contact": "సంప్రదించండి",
         "nav_about": "గురించి",
@@ -174,7 +174,7 @@ TRANSLATIONS = {
         "err_rainfall": "దయచేసి వర్షపాతం (మిమీ) నమోదు చేయండి.",
     },
     "ta": {
-        "brand": "பயிர் பரிந்துரை",
+        "brand": "AgriSense",
         "nav_home": "முகப்பு",
         "nav_contact": "தொடர்பு கொள்ள",
         "nav_about": "பற்றி",
@@ -232,7 +232,7 @@ TRANSLATIONS = {
         "err_rainfall": "தயவுசெய்து மழைப்பொழிவு (மிமீ) உள்ளிடவும்.",
     },
     "kn": {
-        "brand": "ಬೆಳೆ ಶಿಫಾರಸು",
+        "brand": "AgriSense",
         "nav_home": "ಮುಖ್ಯ ಪುಟ",
         "nav_contact": "ಸಂಪರ್ಕಿಸಿ",
         "nav_about": "ಕುರಿತು",
@@ -290,7 +290,7 @@ TRANSLATIONS = {
         "err_rainfall": "ದಯವಿಟ್ಟು ಮಳೆಪ್ರಮಾಣ (ಮಿಮೀ) ನಮೂದಿಸಿ.",
     },
     "mr": {
-        "brand": "पिक शिफारस",
+        "brand": "AgriSense",
         "nav_home": "होम",
         "nav_contact": "संपर्क",
         "nav_about": "बद्दल",
@@ -348,7 +348,7 @@ TRANSLATIONS = {
         "err_rainfall": "कृपया पर्जन्यमान (मिमी) प्रविष्ट करा.",
     },
     "bn": {
-        "brand": "ফসল সুপারিশ",
+        "brand": "AgriSense",
         "nav_home": "হোম",
         "nav_contact": "যোগাযোগ",
         "nav_about": "সম্পর্কে",
@@ -406,7 +406,7 @@ TRANSLATIONS = {
         "err_rainfall": "অনুগ্রহ করে বৃষ্টিপাত (মিমি) লিখুন।",
     },
     "gu": {
-        "brand": "પાક ભલામણ",
+        "brand": "AgriSense",
         "nav_home": "હોમ",
         "nav_contact": "સંપર્ક",
         "nav_about": "વિશે",
@@ -464,7 +464,7 @@ TRANSLATIONS = {
         "err_rainfall": "કૃપા કરીને વરસાદ (મીમી) દાખલ કરો.",
     },
     "ml": {
-        "brand": "വിള ശുപാർശ",
+        "brand": "AgriSense",
         "nav_home": "ഹോം",
         "nav_contact": "ബന്ധപ്പെടുക",
         "nav_about": "കുറിച്ച്",
@@ -522,7 +522,7 @@ TRANSLATIONS = {
 "err_rainfall": "ദയവായി മഴ അളവ് (mm) നൽകുക.",
     },
     "pa": {
-        "brand": "ਫ਼ਸਲ ਦੀ ਸਿਫ਼ਾਰਸ਼",
+        "brand": "AgriSense",
         "nav_home": "ਹੋਮ",
         "nav_contact": "ਸੰਪਰਕ",
         "nav_about": "ਬਾਰੇ",
@@ -580,7 +580,7 @@ TRANSLATIONS = {
 "err_rainfall": "ਕਿਰਪਾ ਕਰਕੇ ਮੀਂਹ (ਮਿਲੀਮੀਟਰ) ਦਰਜ ਕਰੋ।",
     },
     "or": {
-        "brand": "ଫସଲ ସୁପାରିଶ",
+        "brand": "AgriSense",
         "nav_home": "ହୋମ୍",
         "nav_contact": "ଯୋଗାଯୋଗ",
         "nav_about": "ବିଷୟରେ",
@@ -639,7 +639,7 @@ TRANSLATIONS = {
         
     },
     "ur": {
-        "brand": "فصل کی سفارش",
+        "brand": "AgriSense",
         "nav_home": "ہوم",
         "nav_contact": "رابطہ",
         "nav_about": "کے بارے میں",
