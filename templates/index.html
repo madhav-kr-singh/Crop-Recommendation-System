@@ -420,11 +420,19 @@
       border-radius: 6px;
       min-width: auto;
       cursor: pointer;
-      transition: background var(--tr);
+      transition: background var(--tr), color var(--tr), border-color var(--tr);
     }
 
     .unit-select-wrapper .custom-select__trigger:hover {
-      background: #cbd5e1;
+      background: rgba(22, 163, 74, .12);
+      color: var(--g5);
+      border-color: rgba(22, 163, 74, .3);
+    }
+
+    .unit-select-wrapper .custom-select.open .custom-select__trigger {
+      background: rgba(22, 163, 74, .16);
+      color: var(--g5);
+      border-color: var(--g5);
     }
 
     .unit-select-wrapper .custom-select__trigger::after {
