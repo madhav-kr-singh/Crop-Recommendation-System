@@ -22,7 +22,7 @@ TRANSLATIONS = {
         "rainfall": "Rainfall",
         "enter_rainfall": "e.g. 100 (20–300 mm/month)",
         "get_recommendation": "Get Recommendation",
-        "recommend_title": "Recommended Crop for Cultivation:",
+        "recommend_title": "Recommended Crop for Cultivation is :",
         "btn_speak_again": "Listen Again",
         "btn_check_again": "Check Again",
         "err_field": "Required",

@@ -4,9 +4,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AgriSense</title>
-  <!-- ponytail: zero-asset SVG emoji favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
+  <title>AgriSense (Crop Recommendation System)</title>
+  <!-- ponytail: tab favicon using static Hero_img2.ico -->
+  <link rel="icon" href="{{ url_for('static', filename='Hero_img2.ico') }}" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -56,12 +56,17 @@
     .navbar {
       position: sticky;
       top: 0;
-      z-index: 50;
+      z-index: 10000;
       height: var(--nav-h);
       background: var(--nav-bg);
       border-bottom: 1px solid var(--nav-border);
       box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
       padding: 0 clamp(0.75rem, 3vw, 2.5rem);
+    }
+
+    .navbar:has(.custom-select.open),
+    #langSelectWrapper:has(.custom-select.open) {
+      z-index: 999999 !important;
     }
 
     .navbar__inner {
@@ -98,6 +103,10 @@
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
+    }
+
+    #langSelectWrapper {
+      z-index: 10000;
     }
 
     .custom-select {
@@ -158,7 +167,7 @@
       visibility: hidden;
       transition: opacity var(--tr), visibility var(--tr), transform var(--tr);
       transform: translateY(-8px);
-      z-index: 1000;
+      z-index: 999999 !important;
     }
 
     /* ponytail: minimum custom scrollbar to meet lighter slider requirement */
