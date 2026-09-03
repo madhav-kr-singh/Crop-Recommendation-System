@@ -71,24 +71,29 @@ def convert_input_value(field, val, unit_type="default"):
         val /= 12.0
     return val
 
-def validate_inputs(form_data):
+def validate_inputs(form_data, lang="en"):
     errors = {}
     parsed = {}
     for field, (lo, hi, unit) in VALIDATION_BOUNDS.items():
         raw = form_data.get(field, "").strip()
+        field_lower = field.lower()
+        field_translated = t(field_lower, lang)
         if not raw:
-            errors[field] = f"{field} is required."
+            errors[field] = t(f"err_{field_lower}", lang)
             continue
         try:
             val = float(raw)
             unit_type = form_data.get(f"unit_{field}", "default")
             converted_val = convert_input_value(field, val, unit_type)
             if not (lo <= converted_val <= hi):
-                errors[field] = f"{field} must be between {lo:g} and {hi:g} {unit}. (Entered: {val:g})"
+                fmt = t("err_range", lang)
+                if not fmt or fmt == "err_range":
+                    fmt = "{field} must be between {lo} and {hi} {unit}. (Entered: {val})"
+                errors[field] = fmt.format(field=field_translated, lo=f"{lo:g}", hi=f"{hi:g}", unit=unit, val=f"{val:g}")
             else:
                 parsed[field] = converted_val
         except ValueError:
-            errors[field] = f"Please enter a valid number for {field}."
+            errors[field] = t(f"err_{field_lower}", lang)
     return errors, parsed
 
 @app.route("/")
@@ -102,7 +107,7 @@ def predict():
         return redirect(url_for("index", lang=request.args.get("lang", "en")))
     
     lang = request.args.get('lang', 'en')
-    errors, parsed = validate_inputs(request.form)
+    errors, parsed = validate_inputs(request.form, lang=lang)
     if errors:
         return render_template("index.html", errors=errors, form_data=request.form, lang=lang, t=t), 400
 
