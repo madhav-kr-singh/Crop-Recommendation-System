@@ -94,6 +94,22 @@
       flex-shrink: 1;
     }
 
+    .navbar__brand .dotless-i {
+      position: relative;
+      display: inline-block;
+    }
+
+    .navbar__brand .dotless-i::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -0.12em;
+      width: 0.58em;
+      height: 0.58em;
+      transform: translateX(-40%) rotate(-5deg);
+      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M15 85 C25 35 55 15 88 15 C88 50 65 92 15 85 Z' fill='%2316a34a'/><path d='M20 80 Q35 65 52 48' stroke='white' stroke-width='6' stroke-linecap='round'/></svg>") no-repeat center/contain;
+    }
+
     /* Custom Select */
     .custom-select-wrapper {
       position: relative;
@@ -256,7 +272,8 @@
       letter-spacing: -.02em;
       margin-bottom: 2rem;
       line-height: 1.25;
-      white-space: nowrap; /* ponytail: ensure title and leaf emoji always stay on one line */
+      white-space: nowrap;
+      /* ponytail: ensure title and leaf emoji always stay on one line */
     }
 
     .form-grid {
@@ -553,8 +570,8 @@
       pointer-events: none;
     }
 
-    input[type=number].error + .error-text,
-    .input-with-unit.error + .error-text,
+    input[type=number].error+.error-text,
+    .input-with-unit.error+.error-text,
     .field:has(.error) .error-text,
     .error-text.visible {
       opacity: 1;
@@ -752,6 +769,10 @@
         gap: 0.35rem;
       }
 
+      .brand-text-en {
+        font-size: 1.35rem;
+      }
+
       .custom-select__trigger {
         font-size: 0.78rem;
         padding: 0.32rem 0.55rem;
@@ -769,7 +790,8 @@
       h1 {
         font-size: clamp(1.05rem, 5.3vw, 1.35rem);
         margin-bottom: 1.25rem;
-        width: 100%; /* ponytail: match input field width */
+        width: 100%;
+        /* ponytail: match input field width */
         text-align: center;
         white-space: normal;
       }
@@ -784,6 +806,19 @@
         margin-top: .5rem;
       }
     }
+
+    .brand-text-en {
+      font-size: clamp(1.4rem, 4vw, 1.8rem);
+    }
+
+    .navbar__brand .brand-dark {
+      color: #0f172a;
+    }
+
+    .navbar__brand .brand-green {
+      color: #16a34a;
+      margin-left: 0.2rem;
+    }
   </style>
 </head>
 
@@ -792,9 +827,15 @@
   <nav class="navbar" role="navigation" aria-label="Main navigation" dir="{{ 'rtl' if lang == 'ur' else 'ltr' }}">
     <div class="navbar__inner">
       <a class="navbar__brand" href="/?lang={{ lang }}">
+        {% if lang == 'en' %}
+        <span class="brand-text-en"><span class="brand-dark">Agr<span class="dotless-i">ı</span></span><span
+            class="brand-green">Sense</span></span>
+        {% else %}
         <span>{{ t("brand", lang) }}</span>
+        {% endif %}
         <!-- ponytail: nav emoji.webp logo image displayed right after brand text -->
-        <img src="{{ url_for('static', filename='nav emoji.webp') }}" alt="AgriSense Logo" style="height: 34px; width: auto; object-fit: contain; vertical-align: middle;">
+        <img src="{{ url_for('static', filename='nav emoji.webp') }}" alt="AgriSense Logo"
+          style="height: 34px; width: auto; object-fit: contain; vertical-align: middle;">
       </a>
       <div class="custom-select-wrapper" id="langSelectWrapper">
         <div class="custom-select" id="langSelect">
@@ -842,7 +883,8 @@
       <!-- ponytail: hero title wrapper keeping h1 and rotated Hero_img2 image on the exact same line right after title -->
       <div class="hero-title-container">
         <h1>{{ t("app_title", lang) }}</h1>
-        <img src="{{ url_for('static', filename='Hero_img.webp') }}" alt="Hero Image" style="height: 1.3rem; width: auto; object-fit: contain; transform: rotate(358deg);">
+        <img src="{{ url_for('static', filename='Hero_img.webp') }}" alt="Hero Image"
+          style="height: 1.3rem; width: auto; object-fit: contain; transform: rotate(358deg);">
       </div>
 
       <!-- {% if errors %}
@@ -862,183 +904,324 @@
           <div class="field">
             <label for="Nitrogen">{{ t("nitrogen", lang) }}</label>
             <div class="input-with-unit {% if form_data and form_data.get('Nitrogen') %}has-value{% endif %}">
-              <input type="number" id="Nitrogen" name="Nitrogen" min="0" max="140" placeholder="{{ t('enter_nitrogen', lang) }}" value="{{ form_data.get('Nitrogen', '') if form_data else '' }}" class="{% if errors and errors.get('Nitrogen') %}error{% endif %}" required>
+              <input type="number" id="Nitrogen" name="Nitrogen" min="0" max="140"
+                placeholder="{{ t('enter_nitrogen', lang) }}"
+                value="{{ form_data.get('Nitrogen', '') if form_data else '' }}"
+                class="{% if errors and errors.get('Nitrogen') %}error{% endif %}" required>
               <div class="unit-stepper" aria-hidden="true">
-                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1" title="Increase">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1"
+                  title="Increase">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M18 15l-6-6-6 6" />
+                  </svg>
                 </button>
-                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1" title="Decrease">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1"
+                  title="Decrease">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </button>
               </div>
               <div class="custom-select-wrapper unit-select-wrapper">
                 <div class="custom-select" id="unitSelect_Nitrogen">
                   <div class="custom-select__trigger unit-select__trigger" role="button" tabindex="0">
-                    <span>{% if form_data and form_data.get('unit_Nitrogen') == 'kg_acre' %}kg/acre{% elif form_data and form_data.get('unit_Nitrogen') == 'ppm' %}ppm{% else %}kg/ha{% endif %}</span>
-                    <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                    <span>{% if form_data and form_data.get('unit_Nitrogen') == 'kg_acre' %}kg/acre{% elif form_data and
+                      form_data.get('unit_Nitrogen') == 'ppm' %}ppm{% else %}kg/ha{% endif %}</span>
+                    <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
                   </div>
                   <div class="custom-select__options">
-                    <span class="custom-select__option {% if not form_data or form_data.get('unit_Nitrogen') == 'default' %}selected{% endif %}" data-value="default" data-text="kg/ha">kg/ha</span>
-                    <span class="custom-select__option {% if form_data and form_data.get('unit_Nitrogen') == 'kg_acre' %}selected{% endif %}" data-value="kg_acre" data-text="kg/acre">kg/acre</span>
-                    <span class="custom-select__option {% if form_data and form_data.get('unit_Nitrogen') == 'ppm' %}selected{% endif %}" data-value="ppm" data-text="ppm">ppm</span>
+                    <span
+                      class="custom-select__option {% if not form_data or form_data.get('unit_Nitrogen') == 'default' %}selected{% endif %}"
+                      data-value="default" data-text="kg/ha">kg/ha</span>
+                    <span
+                      class="custom-select__option {% if form_data and form_data.get('unit_Nitrogen') == 'kg_acre' %}selected{% endif %}"
+                      data-value="kg_acre" data-text="kg/acre">kg/acre</span>
+                    <span
+                      class="custom-select__option {% if form_data and form_data.get('unit_Nitrogen') == 'ppm' %}selected{% endif %}"
+                      data-value="ppm" data-text="ppm">ppm</span>
                   </div>
                 </div>
-                <input type="hidden" name="unit_Nitrogen" id="hidden_unit_Nitrogen" value="{{ form_data.get('unit_Nitrogen', 'default') if form_data else 'default' }}">
+                <input type="hidden" name="unit_Nitrogen" id="hidden_unit_Nitrogen"
+                  value="{{ form_data.get('unit_Nitrogen', 'default') if form_data else 'default' }}">
               </div>
             </div>
-            <span class="error-text {% if errors and errors.get('Nitrogen') %}visible{% endif %}">&#9888; {{ errors.get('Nitrogen') if (errors and errors.get('Nitrogen')) else t("err_nitrogen", lang) }}</span>
+            <span class="error-text {% if errors and errors.get('Nitrogen') %}visible{% endif %}">&#9888; {{
+              errors.get('Nitrogen') if (errors and errors.get('Nitrogen')) else t("err_nitrogen", lang) }}</span>
           </div>
 
           <div class="field">
             <label for="Phosphorus">{{ t("phosphorus", lang) }}</label>
             <div class="input-with-unit {% if form_data and form_data.get('Phosphorus') %}has-value{% endif %}">
-              <input type="number" id="Phosphorus" name="Phosphorus" min="5" max="145" placeholder="{{ t('enter_phosphorus', lang) }}" value="{{ form_data.get('Phosphorus', '') if form_data else '' }}" class="{% if errors and errors.get('Phosphorus') %}error{% endif %}" required>
+              <input type="number" id="Phosphorus" name="Phosphorus" min="5" max="145"
+                placeholder="{{ t('enter_phosphorus', lang) }}"
+                value="{{ form_data.get('Phosphorus', '') if form_data else '' }}"
+                class="{% if errors and errors.get('Phosphorus') %}error{% endif %}" required>
               <div class="unit-stepper" aria-hidden="true">
-                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1" title="Increase">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1"
+                  title="Increase">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M18 15l-6-6-6 6" />
+                  </svg>
                 </button>
-                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1" title="Decrease">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1"
+                  title="Decrease">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </button>
               </div>
               <div class="custom-select-wrapper unit-select-wrapper">
                 <div class="custom-select" id="unitSelect_Phosphorus">
                   <div class="custom-select__trigger unit-select__trigger" role="button" tabindex="0">
-                    <span>{% if form_data and form_data.get('unit_Phosphorus') == 'p2o5' %}kg/ha (P₂O₅){% elif form_data and form_data.get('unit_Phosphorus') == 'ppm' %}ppm{% elif form_data and form_data.get('unit_Phosphorus') == 'kg_acre' %}kg/acre{% else %}kg/ha (P){% endif %}</span>
-                    <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                    <span>{% if form_data and form_data.get('unit_Phosphorus') == 'p2o5' %}kg/ha (P₂O₅){% elif form_data
+                      and form_data.get('unit_Phosphorus') == 'ppm' %}ppm{% elif form_data and
+                      form_data.get('unit_Phosphorus') == 'kg_acre' %}kg/acre{% else %}kg/ha (P){% endif %}</span>
+                    <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
                   </div>
                   <div class="custom-select__options">
-                    <span class="custom-select__option {% if not form_data or form_data.get('unit_Phosphorus') == 'default' %}selected{% endif %}" data-value="default" data-text="kg/ha (P)">kg/ha (P)</span>
-                    <span class="custom-select__option {% if form_data and form_data.get('unit_Phosphorus') == 'p2o5' %}selected{% endif %}" data-value="p2o5" data-text="kg/ha (P₂O₅)">kg/ha (P₂O₅)</span>
-                    <span class="custom-select__option {% if form_data and form_data.get('unit_Phosphorus') == 'ppm' %}selected{% endif %}" data-value="ppm" data-text="ppm">ppm</span>
-                    <span class="custom-select__option {% if form_data and form_data.get('unit_Phosphorus') == 'kg_acre' %}selected{% endif %}" data-value="kg_acre" data-text="kg/acre">kg/acre</span>
+                    <span
+                      class="custom-select__option {% if not form_data or form_data.get('unit_Phosphorus') == 'default' %}selected{% endif %}"
+                      data-value="default" data-text="kg/ha (P)">kg/ha (P)</span>
+                    <span
+                      class="custom-select__option {% if form_data and form_data.get('unit_Phosphorus') == 'p2o5' %}selected{% endif %}"
+                      data-value="p2o5" data-text="kg/ha (P₂O₅)">kg/ha (P₂O₅)</span>
+                    <span
+                      class="custom-select__option {% if form_data and form_data.get('unit_Phosphorus') == 'ppm' %}selected{% endif %}"
+                      data-value="ppm" data-text="ppm">ppm</span>
+                    <span
+                      class="custom-select__option {% if form_data and form_data.get('unit_Phosphorus') == 'kg_acre' %}selected{% endif %}"
+                      data-value="kg_acre" data-text="kg/acre">kg/acre</span>
                   </div>
                 </div>
-                <input type="hidden" name="unit_Phosphorus" id="hidden_unit_Phosphorus" value="{{ form_data.get('unit_Phosphorus', 'default') if form_data else 'default' }}">
+                <input type="hidden" name="unit_Phosphorus" id="hidden_unit_Phosphorus"
+                  value="{{ form_data.get('unit_Phosphorus', 'default') if form_data else 'default' }}">
               </div>
             </div>
-            <span class="error-text {% if errors and errors.get('Phosphorus') %}visible{% endif %}">&#9888; {{ errors.get('Phosphorus') if (errors and errors.get('Phosphorus')) else t("err_phosphorus", lang) }}</span>
+            <span class="error-text {% if errors and errors.get('Phosphorus') %}visible{% endif %}">&#9888; {{
+              errors.get('Phosphorus') if (errors and errors.get('Phosphorus')) else t("err_phosphorus", lang) }}</span>
           </div>
 
           <div class="field">
             <label for="Potassium">{{ t("potassium", lang) }}</label>
             <div class="input-with-unit {% if form_data and form_data.get('Potassium') %}has-value{% endif %}">
-              <input type="number" id="Potassium" name="Potassium" min="5" max="205" placeholder="{{ t('enter_potassium', lang) }}" value="{{ form_data.get('Potassium', '') if form_data else '' }}" class="{% if errors and errors.get('Potassium') %}error{% endif %}" required>
+              <input type="number" id="Potassium" name="Potassium" min="5" max="205"
+                placeholder="{{ t('enter_potassium', lang) }}"
+                value="{{ form_data.get('Potassium', '') if form_data else '' }}"
+                class="{% if errors and errors.get('Potassium') %}error{% endif %}" required>
               <div class="unit-stepper" aria-hidden="true">
-                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1" title="Increase">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1"
+                  title="Increase">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M18 15l-6-6-6 6" />
+                  </svg>
                 </button>
-                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1" title="Decrease">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1"
+                  title="Decrease">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </button>
               </div>
               <div class="custom-select-wrapper unit-select-wrapper">
                 <div class="custom-select" id="unitSelect_Potassium">
                   <div class="custom-select__trigger unit-select__trigger" role="button" tabindex="0">
-                    <span>{% if form_data and form_data.get('unit_Potassium') == 'k2o' %}kg/ha (K₂O){% elif form_data and form_data.get('unit_Potassium') == 'ppm' %}ppm{% elif form_data and form_data.get('unit_Potassium') == 'kg_acre' %}kg/acre{% else %}kg/ha (K){% endif %}</span>
-                    <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                    <span>{% if form_data and form_data.get('unit_Potassium') == 'k2o' %}kg/ha (K₂O){% elif form_data
+                      and form_data.get('unit_Potassium') == 'ppm' %}ppm{% elif form_data and
+                      form_data.get('unit_Potassium') == 'kg_acre' %}kg/acre{% else %}kg/ha (K){% endif %}</span>
+                    <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
                   </div>
                   <div class="custom-select__options">
-                    <span class="custom-select__option {% if not form_data or form_data.get('unit_Potassium') == 'default' %}selected{% endif %}" data-value="default" data-text="kg/ha (K)">kg/ha (K)</span>
-                    <span class="custom-select__option {% if form_data and form_data.get('unit_Potassium') == 'k2o' %}selected{% endif %}" data-value="k2o" data-text="kg/ha (K₂O)">kg/ha (K₂O)</span>
-                    <span class="custom-select__option {% if form_data and form_data.get('unit_Potassium') == 'ppm' %}selected{% endif %}" data-value="ppm" data-text="ppm">ppm</span>
-                    <span class="custom-select__option {% if form_data and form_data.get('unit_Potassium') == 'kg_acre' %}selected{% endif %}" data-value="kg_acre" data-text="kg/acre">kg/acre</span>
+                    <span
+                      class="custom-select__option {% if not form_data or form_data.get('unit_Potassium') == 'default' %}selected{% endif %}"
+                      data-value="default" data-text="kg/ha (K)">kg/ha (K)</span>
+                    <span
+                      class="custom-select__option {% if form_data and form_data.get('unit_Potassium') == 'k2o' %}selected{% endif %}"
+                      data-value="k2o" data-text="kg/ha (K₂O)">kg/ha (K₂O)</span>
+                    <span
+                      class="custom-select__option {% if form_data and form_data.get('unit_Potassium') == 'ppm' %}selected{% endif %}"
+                      data-value="ppm" data-text="ppm">ppm</span>
+                    <span
+                      class="custom-select__option {% if form_data and form_data.get('unit_Potassium') == 'kg_acre' %}selected{% endif %}"
+                      data-value="kg_acre" data-text="kg/acre">kg/acre</span>
                   </div>
                 </div>
-                <input type="hidden" name="unit_Potassium" id="hidden_unit_Potassium" value="{{ form_data.get('unit_Potassium', 'default') if form_data else 'default' }}">
+                <input type="hidden" name="unit_Potassium" id="hidden_unit_Potassium"
+                  value="{{ form_data.get('unit_Potassium', 'default') if form_data else 'default' }}">
               </div>
             </div>
-            <span class="error-text {% if errors and errors.get('Potassium') %}visible{% endif %}">&#9888; {{ errors.get('Potassium') if (errors and errors.get('Potassium')) else t("err_potassium", lang) }}</span>
+            <span class="error-text {% if errors and errors.get('Potassium') %}visible{% endif %}">&#9888; {{
+              errors.get('Potassium') if (errors and errors.get('Potassium')) else t("err_potassium", lang) }}</span>
           </div>
 
           <div class="field">
             <label for="Temperature">{{ t("temperature", lang) }}</label>
             <div class="input-with-unit {% if form_data and form_data.get('Temperature') %}has-value{% endif %}">
-              <input type="number" step="0.01" id="Temperature" name="Temperature" min="8" max="44" placeholder="{{ t('enter_temperature', lang) }}" value="{{ form_data.get('Temperature', '') if form_data else '' }}" class="{% if errors and errors.get('Temperature') %}error{% endif %}" required>
+              <input type="number" step="0.01" id="Temperature" name="Temperature" min="8" max="44"
+                placeholder="{{ t('enter_temperature', lang) }}"
+                value="{{ form_data.get('Temperature', '') if form_data else '' }}"
+                class="{% if errors and errors.get('Temperature') %}error{% endif %}" required>
               <div class="unit-stepper" aria-hidden="true">
-                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1" title="Increase">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1"
+                  title="Increase">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M18 15l-6-6-6 6" />
+                  </svg>
                 </button>
-                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1" title="Decrease">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1"
+                  title="Decrease">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </button>
               </div>
               <div class="custom-select-wrapper unit-select-wrapper">
                 <div class="custom-select" id="unitSelect_Temperature">
                   <div class="custom-select__trigger unit-select__trigger" role="button" tabindex="0">
-                    <span>{% if form_data and form_data.get('unit_Temperature') == 'fahrenheit' %}°F{% else %}°C{% endif %}</span>
-                    <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                    <span>{% if form_data and form_data.get('unit_Temperature') == 'fahrenheit' %}°F{% else %}°C{% endif
+                      %}</span>
+                    <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
                   </div>
                   <div class="custom-select__options">
-                    <span class="custom-select__option {% if not form_data or form_data.get('unit_Temperature') == 'default' %}selected{% endif %}" data-value="default" data-text="°C">°C</span>
-                    <span class="custom-select__option {% if form_data and form_data.get('unit_Temperature') == 'fahrenheit' %}selected{% endif %}" data-value="fahrenheit" data-text="°F">°F</span>
+                    <span
+                      class="custom-select__option {% if not form_data or form_data.get('unit_Temperature') == 'default' %}selected{% endif %}"
+                      data-value="default" data-text="°C">°C</span>
+                    <span
+                      class="custom-select__option {% if form_data and form_data.get('unit_Temperature') == 'fahrenheit' %}selected{% endif %}"
+                      data-value="fahrenheit" data-text="°F">°F</span>
                   </div>
                 </div>
-                <input type="hidden" name="unit_Temperature" id="hidden_unit_Temperature" value="{{ form_data.get('unit_Temperature', 'default') if form_data else 'default' }}">
+                <input type="hidden" name="unit_Temperature" id="hidden_unit_Temperature"
+                  value="{{ form_data.get('unit_Temperature', 'default') if form_data else 'default' }}">
               </div>
             </div>
-            <span class="error-text {% if errors and errors.get('Temperature') %}visible{% endif %}">&#9888; {{ errors.get('Temperature') if (errors and errors.get('Temperature')) else t("err_temperature", lang) }}</span>
+            <span class="error-text {% if errors and errors.get('Temperature') %}visible{% endif %}">&#9888; {{
+              errors.get('Temperature') if (errors and errors.get('Temperature')) else t("err_temperature", lang)
+              }}</span>
           </div>
 
           <div class="field">
             <label for="Humidity">{{ t("humidity", lang) }}</label>
             <div class="input-with-unit {% if form_data and form_data.get('Humidity') %}has-value{% endif %}">
-              <input type="number" step="0.01" id="Humidity" name="Humidity" min="0" max="100" placeholder="{{ t('enter_humidity', lang) }}" value="{{ form_data.get('Humidity', '') if form_data else '' }}" class="{% if errors and errors.get('Humidity') %}error{% endif %}" required>
+              <input type="number" step="0.01" id="Humidity" name="Humidity" min="0" max="100"
+                placeholder="{{ t('enter_humidity', lang) }}"
+                value="{{ form_data.get('Humidity', '') if form_data else '' }}"
+                class="{% if errors and errors.get('Humidity') %}error{% endif %}" required>
               <div class="unit-stepper" aria-hidden="true">
-                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1" title="Increase">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1"
+                  title="Increase">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M18 15l-6-6-6 6" />
+                  </svg>
                 </button>
-                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1" title="Decrease">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1"
+                  title="Decrease">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </button>
               </div>
             </div>
-            <span class="error-text {% if errors and errors.get('Humidity') %}visible{% endif %}">&#9888; {{ errors.get('Humidity') if (errors and errors.get('Humidity')) else t("err_humidity", lang) }}</span>
+            <span class="error-text {% if errors and errors.get('Humidity') %}visible{% endif %}">&#9888; {{
+              errors.get('Humidity') if (errors and errors.get('Humidity')) else t("err_humidity", lang) }}</span>
           </div>
 
           <div class="field">
             <label for="Ph">{{ t("ph", lang) }}</label>
             <div class="input-with-unit {% if form_data and form_data.get('Ph') %}has-value{% endif %}">
-              <input type="number" step="0.01" id="Ph" name="Ph" min="3.5" max="10" placeholder="{{ t('enter_ph', lang) }}" value="{{ form_data.get('Ph', '') if form_data else '' }}" class="{% if errors and errors.get('Ph') %}error{% endif %}" required>
+              <input type="number" step="0.01" id="Ph" name="Ph" min="3.5" max="10"
+                placeholder="{{ t('enter_ph', lang) }}" value="{{ form_data.get('Ph', '') if form_data else '' }}"
+                class="{% if errors and errors.get('Ph') %}error{% endif %}" required>
               <div class="unit-stepper" aria-hidden="true">
-                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1" title="Increase">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1"
+                  title="Increase">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M18 15l-6-6-6 6" />
+                  </svg>
                 </button>
-                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1" title="Decrease">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1"
+                  title="Decrease">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </button>
               </div>
             </div>
-            <span class="error-text {% if errors and errors.get('Ph') %}visible{% endif %}">&#9888; {{ errors.get('Ph') if (errors and errors.get('Ph')) else t("err_ph", lang) }}</span>
+            <span class="error-text {% if errors and errors.get('Ph') %}visible{% endif %}">&#9888; {{ errors.get('Ph')
+              if (errors and errors.get('Ph')) else t("err_ph", lang) }}</span>
           </div>
 
           <div class="field">
             <label for="Rainfall">{{ t("rainfall", lang) }}</label>
             <div class="input-with-unit {% if form_data and form_data.get('Rainfall') %}has-value{% endif %}">
-              <input type="number" step="0.01" id="Rainfall" name="Rainfall" min="20" max="300" placeholder="{{ t('enter_rainfall', lang) }}" value="{{ form_data.get('Rainfall', '') if form_data else '' }}" class="{% if errors and errors.get('Rainfall') %}error{% endif %}" required>
+              <input type="number" step="0.01" id="Rainfall" name="Rainfall" min="20" max="300"
+                placeholder="{{ t('enter_rainfall', lang) }}"
+                value="{{ form_data.get('Rainfall', '') if form_data else '' }}"
+                class="{% if errors and errors.get('Rainfall') %}error{% endif %}" required>
               <div class="unit-stepper" aria-hidden="true">
-                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1" title="Increase">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+                <button type="button" class="stepper-btn stepper-up" onclick="stepInput(this, 1)" tabindex="-1"
+                  title="Increase">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M18 15l-6-6-6 6" />
+                  </svg>
                 </button>
-                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1" title="Decrease">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                <button type="button" class="stepper-btn stepper-down" onclick="stepInput(this, -1)" tabindex="-1"
+                  title="Decrease">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
                 </button>
               </div>
               <div class="custom-select-wrapper unit-select-wrapper">
                 <div class="custom-select" id="unitSelect_Rainfall">
                   <div class="custom-select__trigger unit-select__trigger" role="button" tabindex="0">
-                    <span>{% if form_data and form_data.get('unit_Rainfall') == 'annual' %}mm/year{% else %}mm/month{% endif %}</span>
-                    <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                    <span>{% if form_data and form_data.get('unit_Rainfall') == 'annual' %}mm/year{% else %}mm/month{%
+                      endif %}</span>
+                    <svg class="dropdown-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
                   </div>
                   <div class="custom-select__options">
-                    <span class="custom-select__option {% if not form_data or form_data.get('unit_Rainfall') == 'default' %}selected{% endif %}" data-value="default" data-text="mm/month">mm/month</span>
-                    <span class="custom-select__option {% if form_data and form_data.get('unit_Rainfall') == 'annual' %}selected{% endif %}" data-value="annual" data-text="mm/year">mm/year</span>
+                    <span
+                      class="custom-select__option {% if not form_data or form_data.get('unit_Rainfall') == 'default' %}selected{% endif %}"
+                      data-value="default" data-text="mm/month">mm/month</span>
+                    <span
+                      class="custom-select__option {% if form_data and form_data.get('unit_Rainfall') == 'annual' %}selected{% endif %}"
+                      data-value="annual" data-text="mm/year">mm/year</span>
                   </div>
                 </div>
-                <input type="hidden" name="unit_Rainfall" id="hidden_unit_Rainfall" value="{{ form_data.get('unit_Rainfall', 'default') if form_data else 'default' }}">
+                <input type="hidden" name="unit_Rainfall" id="hidden_unit_Rainfall"
+                  value="{{ form_data.get('unit_Rainfall', 'default') if form_data else 'default' }}">
               </div>
             </div>
-            <span class="error-text {% if errors and errors.get('Rainfall') %}visible{% endif %}">&#9888; {{ errors.get('Rainfall') if (errors and errors.get('Rainfall')) else t("err_rainfall", lang) }}</span>
+            <span class="error-text {% if errors and errors.get('Rainfall') %}visible{% endif %}">&#9888; {{
+              errors.get('Rainfall') if (errors and errors.get('Rainfall')) else t("err_rainfall", lang) }}</span>
           </div>
 
           <button type="submit" class="btn-submit">{{ t("get_recommendation", lang) }}</button>
