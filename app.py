@@ -4,7 +4,14 @@ import pickle
 import os
 import asyncio
 import edge_tts
+import re
 from translations import t, TRANSLATIONS
+
+def get_clean_field_name(field_translated):
+    # ponytail: strip static base unit brackets like [kg/ha], (°C), (N), (P), (K), (%) so error messages match selected unit
+    cleaned = re.sub(r'\s*[\(\[\{].*?[\)\]\}]', '', field_translated)
+    return cleaned.strip()
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -43,6 +50,46 @@ VALIDATION_BOUNDS = {
     "Rainfall":    (20.0, 300.0, "mm/month"),
 }
 
+# ponytail: unit-aware display bounds and symbol mapping matching UI UNIT_CONFIGS
+UNIT_BOUNDS_MAP = {
+    "Nitrogen": {
+        "default": (0.0, 140.0, "kg/ha"),
+        "kg_acre": (0.0, 56.6, "kg/acre"),
+        "ppm": (0.0, 62.5, "ppm"),
+    },
+    "Phosphorus": {
+        "default": (5.0, 145.0, "kg/ha"),
+        "p2o5": (11.4, 332.0, "kg/ha (P₂O₅)"),
+        "ppm": (2.2, 64.7, "ppm"),
+        "kg_acre": (2.0, 58.7, "kg/acre"),
+    },
+    "Potassium": {
+        "default": (5.0, 205.0, "kg/ha"),
+        "k2o": (6.0, 247.0, "kg/ha (K₂O)"),
+        "ppm": (2.2, 91.5, "ppm"),
+        "kg_acre": (2.0, 83.0, "kg/acre"),
+    },
+    "Temperature": {
+        "default": (8.0, 44.0, "°C"),
+        "fahrenheit": (46.4, 111.2, "°F"),
+    },
+    "Humidity": {
+        "default": (0.0, 100.0, "%"),
+    },
+    "Ph": {
+        "default": (3.5, 10.0, "pH"),
+    },
+    "Rainfall": {
+        "default": (20.0, 300.0, "mm/month"),
+        "annual": (240.0, 3600.0, "mm/year"),
+    },
+}
+
+def get_unit_bounds_and_symbol(field, unit_type):
+    u = (unit_type or "default").lower().strip()
+    field_map = UNIT_BOUNDS_MAP.get(field, {})
+    return field_map.get(u, field_map.get("default", VALIDATION_BOUNDS.get(field, (0.0, 100.0, ""))))
+
 def convert_input_value(field, val, unit_type="default"):
     """
     Convert real-world farmer lab inputs / units into model base metric units:
@@ -77,7 +124,8 @@ def validate_inputs(form_data, lang="en"):
     for field, (lo, hi, unit) in VALIDATION_BOUNDS.items():
         raw = form_data.get(field, "").strip()
         field_lower = field.lower()
-        field_translated = t(field_lower, lang)
+        field_translated = get_clean_field_name(t(field_lower, lang))
+
         if not raw:
             errors[field] = t(f"err_{field_lower}", lang)
             continue
@@ -86,10 +134,11 @@ def validate_inputs(form_data, lang="en"):
             unit_type = form_data.get(f"unit_{field}", "default")
             converted_val = convert_input_value(field, val, unit_type)
             if not (lo <= converted_val <= hi):
+                lo_disp, hi_disp, unit_disp = get_unit_bounds_and_symbol(field, unit_type)
                 fmt = t("err_range", lang)
                 if not fmt or fmt == "err_range":
                     fmt = "{field} must be between {lo} and {hi} {unit}. (Entered: {val})"
-                errors[field] = fmt.format(field=field_translated, lo=f"{lo:g}", hi=f"{hi:g}", unit=unit, val=f"{val:g}")
+                errors[field] = fmt.format(field=field_translated, lo=f"{lo_disp:g}", hi=f"{hi_disp:g}", unit=unit_disp, val=f"{val:g}")
             else:
                 parsed[field] = converted_val
         except ValueError:
