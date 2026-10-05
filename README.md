@@ -65,7 +65,7 @@ crop-recommendation-system ui updated/
 │   ├── Hero_img.webp        # Hero section graphic asset
 │   ├── Hero_img2.ico        # Browser tab favicon
 │   ├── nav emoji.webp       # Brand navbar badge
-│   ├── result.mp3           # Dynamic TTS audio output file
+│   ├── tts/                 # Cached TTS clips, one per language+crop (generated, git-ignored)
 │   └── [crop images].webp   # Crop visual recommendation badges
 └── templates/
     └── index.html           # Core HTML template, CSS design system, & JS logic

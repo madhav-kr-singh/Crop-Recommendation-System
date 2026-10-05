@@ -5,6 +5,7 @@ import os
 import asyncio
 import edge_tts
 import re
+import uuid
 from translations import t, TRANSLATIONS
 
 def get_clean_field_name(field_translated):
@@ -176,17 +177,25 @@ def predict():
         crop = prediction[0]
         result = crop
 
-        # ponytail: dynamic multilingual TTS speech text & voice selection
-        translated_crop = t(crop, lang)
-        recommend_title = t("recommend_title", lang)
-        tts_text = f"{recommend_title} {translated_crop}."
-        voice = VOICES.get(lang, VOICES["en"])
+        # ponytail: one cached clip per (language, crop) -> unique URL per result, safe for concurrent users
+        voice_lang = lang if lang in VOICES else "en"   # lang comes from the URL: never put raw input in a path
+        audio_file = f"tts/{voice_lang}_{crop}.mp3"
+        audio_path = os.path.join(BASE_DIR, "static", audio_file)
+        if not os.path.exists(audio_path):
+            tmp = f"{audio_path}.{uuid.uuid4().hex}.tmp"   # write-then-rename: no half-written clip is ever served
+            try:
+                os.makedirs(os.path.dirname(audio_path), exist_ok=True)
+                tts_text = f"{t('recommend_title', voice_lang)} {t(crop, voice_lang)}."
+                asyncio.run(generate_audio(tts_text, tmp, VOICES[voice_lang]))
+                os.replace(tmp, audio_path)
+            except Exception as e:  # speech is optional: never lose the recommendation over it
+                print("TTS ERROR:", e)
+                audio_file = None
+                if os.path.exists(tmp):
+                    os.remove(tmp)
 
-        audio_path = os.path.join(BASE_DIR, "static", "result.mp3")
-        asyncio.run(generate_audio(tts_text, audio_path, voice))
-        print("Audio saved successfully!")
-
-        return render_template("index.html", result=result, lang=lang, t=t, crop=crop, form_data=request.form)
+        return render_template("index.html", result=result, lang=lang, t=t, crop=crop,
+                               audio_file=audio_file, form_data=request.form)
 
     except Exception as e:
         print("ERROR:", e)

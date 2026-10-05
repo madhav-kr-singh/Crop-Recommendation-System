@@ -1235,10 +1235,13 @@
           <span class="result-card__crop">{{ t(result, lang) }}</span>
         </div>
         <img src="{{ url_for('static', filename=crop + '.webp') }}" class="result-card__img" alt="Recommended crop">
+        {% if audio_file %}
         <audio id="result-audio" style="display:none;">
-          <source src="{{ url_for('static', filename='result.mp3') }}" type="audio/mpeg">
+          <source src="{{ url_for('static', filename=audio_file) }}" type="audio/mpeg">
         </audio>
+        {% endif %}
         <div class="result-card__actions">
+          {% if audio_file %}
           <button class="btn-speak" onclick="replayAudio()" type="button">
             <svg class="icon-speak" viewBox="0 0 24 24" aria-hidden="true">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
@@ -1247,6 +1250,7 @@
             </svg>
             {{ t("btn_speak_again", lang) }}
           </button>
+          {% endif %}
           <button class="btn-speak" onclick="window.location.href='/?lang={{ lang }}'" type="button">
             <svg class="icon-speak" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1359,7 +1363,7 @@
         kg_acre: { min: 2, max: 83, placeholder: 'e.g. 20 (2–83 kg/acre)' }
       },
       unit_Temperature: {
-        default: { min: 8, max: 44, placeholder: 'e.g. 25.5 (9–44 °C)' },
+        default: { min: 8, max: 44, placeholder: 'e.g. 25.5 (8–44 °C)' },
         fahrenheit: { min: 46.4, max: 111.2, placeholder: 'e.g. 78 (46–111 °F)' }
       },
       unit_Rainfall: {
