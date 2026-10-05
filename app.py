@@ -4,7 +4,15 @@ import pickle
 import os
 import asyncio
 import edge_tts
+import re
+import uuid
 from translations import t, TRANSLATIONS
+
+def get_clean_field_name(field_translated):
+    # ponytail: strip static base unit brackets like [kg/ha], (°C), (N), (P), (K), (%) so error messages match selected unit
+    cleaned = re.sub(r'\s*[\(\[\{].*?[\)\]\}]', '', field_translated)
+    return cleaned.strip()
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -32,6 +40,112 @@ async def generate_audio(text, path, voice):
     communicate = edge_tts.Communicate(text, voice)
     await communicate.save(path)
 
+# ponytail: strict agricultural validation bounds matching model training envelope
+VALIDATION_BOUNDS = {
+    "Nitrogen":    (0.0,  140.0, "kg/ha"),
+    "Phosphorus":  (5.0,  145.0, "kg/ha"),
+    "Potassium":   (5.0,  205.0, "kg/ha"),
+    "Temperature": (8.0,  44.0,  "°C"),
+    "Humidity":    (0.0,  100.0, "%"),
+    "Ph":          (3.5,  10.0,  "pH"),
+    "Rainfall":    (20.0, 300.0, "mm/month"),
+}
+
+# ponytail: unit-aware display bounds and symbol mapping matching UI UNIT_CONFIGS
+UNIT_BOUNDS_MAP = {
+    "Nitrogen": {
+        "default": (0.0, 140.0, "kg/ha"),
+        "kg_acre": (0.0, 56.6, "kg/acre"),
+        "ppm": (0.0, 62.5, "ppm"),
+    },
+    "Phosphorus": {
+        "default": (5.0, 145.0, "kg/ha"),
+        "p2o5": (11.4, 332.0, "kg/ha (P₂O₅)"),
+        "ppm": (2.2, 64.7, "ppm"),
+        "kg_acre": (2.0, 58.7, "kg/acre"),
+    },
+    "Potassium": {
+        "default": (5.0, 205.0, "kg/ha"),
+        "k2o": (6.0, 247.0, "kg/ha (K₂O)"),
+        "ppm": (2.2, 91.5, "ppm"),
+        "kg_acre": (2.0, 83.0, "kg/acre"),
+    },
+    "Temperature": {
+        "default": (8.0, 44.0, "°C"),
+        "fahrenheit": (46.4, 111.2, "°F"),
+    },
+    "Humidity": {
+        "default": (0.0, 100.0, "%"),
+    },
+    "Ph": {
+        "default": (3.5, 10.0, "pH"),
+    },
+    "Rainfall": {
+        "default": (20.0, 300.0, "mm/month"),
+        "annual": (240.0, 3600.0, "mm/year"),
+    },
+}
+
+def get_unit_bounds_and_symbol(field, unit_type):
+    u = (unit_type or "default").lower().strip()
+    field_map = UNIT_BOUNDS_MAP.get(field, {})
+    return field_map.get(u, field_map.get("default", VALIDATION_BOUNDS.get(field, (0.0, 100.0, ""))))
+
+def convert_input_value(field, val, unit_type="default"):
+    """
+    Convert real-world farmer lab inputs / units into model base metric units:
+    - P2O5 -> elemental P (x 0.4364)
+    - K2O -> elemental K (x 0.8302)
+    - ppm (mg/kg) -> kg/ha (x 2.24)
+    - kg/acre -> kg/ha (x 2.471)
+    - °F -> °C ((°F - 32) * 5/9)
+    - inches -> mm (x 25.4)
+    - annual rainfall -> monthly average (/ 12)
+    """
+    u = (unit_type or "").lower().strip()
+    if u in ("p2o5",) and field == "Phosphorus":
+        val *= 0.4364
+    elif u in ("k2o",) and field == "Potassium":
+        val *= 0.8302
+    elif u in ("ppm", "mg/kg") and field in ("Nitrogen", "Phosphorus", "Potassium"):
+        val *= 2.24
+    elif u in ("kg/acre", "kg_acre") and field in ("Nitrogen", "Phosphorus", "Potassium"):
+        val *= 2.471
+    elif u in ("f", "fahrenheit", "°f") and field == "Temperature":
+        val = (val - 32.0) * 5.0 / 9.0
+    elif u in ("in", "inch", "inches") and field == "Rainfall":
+        val *= 25.4
+    elif u in ("annual", "yearly") and field == "Rainfall":
+        val /= 12.0
+    return val
+
+def validate_inputs(form_data, lang="en"):
+    errors = {}
+    parsed = {}
+    for field, (lo, hi, unit) in VALIDATION_BOUNDS.items():
+        raw = form_data.get(field, "").strip()
+        field_lower = field.lower()
+        field_translated = get_clean_field_name(t(field_lower, lang))
+
+        if not raw:
+            errors[field] = t(f"err_{field_lower}", lang)
+            continue
+        try:
+            val = float(raw)
+            unit_type = form_data.get(f"unit_{field}", "default")
+            converted_val = convert_input_value(field, val, unit_type)
+            if not (lo <= converted_val <= hi):
+                lo_disp, hi_disp, unit_disp = get_unit_bounds_and_symbol(field, unit_type)
+                fmt = t("err_range", lang)
+                if not fmt or fmt == "err_range":
+                    fmt = "{field} must be between {lo} and {hi} {unit}. (Entered: {val})"
+                errors[field] = fmt.format(field=field_translated, lo=f"{lo_disp:g}", hi=f"{hi_disp:g}", unit=unit_disp, val=f"{val:g}")
+            else:
+                parsed[field] = converted_val
+        except ValueError:
+            errors[field] = t(f"err_{field_lower}", lang)
+    return errors, parsed
+
 @app.route("/")
 def index():
     lang = request.args.get('lang', 'en')
@@ -41,15 +155,20 @@ def index():
 def predict():
     if request.method == "GET":
         return redirect(url_for("index", lang=request.args.get("lang", "en")))
+    
+    lang = request.args.get('lang', 'en')
+    errors, parsed = validate_inputs(request.form, lang=lang)
+    if errors:
+        return render_template("index.html", errors=errors, form_data=request.form, lang=lang, t=t), 400
+
     try:
-        lang = request.args.get('lang', 'en')
-        n = int(request.form["Nitrogen"])
-        p = int(request.form["Phosphorus"])
-        k = int(request.form["Potassium"])
-        temp = float(request.form["Temperature"])
-        humidity = float(request.form["Humidity"])
-        ph = float(request.form["Ph"])
-        rainfall = float(request.form["Rainfall"])
+        n = parsed["Nitrogen"]
+        p = parsed["Phosphorus"]
+        k = parsed["Potassium"]
+        temp = parsed["Temperature"]
+        humidity = parsed["Humidity"]
+        ph = parsed["Ph"]
+        rainfall = parsed["Rainfall"]
 
         features = np.array([[n, p, k, temp, humidity, ph, rainfall]])
         features = ms.transform(features)
@@ -58,17 +177,25 @@ def predict():
         crop = prediction[0]
         result = crop
 
-        # ponytail: dynamic multilingual TTS speech text & voice selection
-        translated_crop = t(crop, lang)
-        recommend_title = t("recommend_title", lang)
-        tts_text = f"{recommend_title} {translated_crop}."
-        voice = VOICES.get(lang, VOICES["en"])
+        # ponytail: one cached clip per (language, crop) -> unique URL per result, safe for concurrent users
+        voice_lang = lang if lang in VOICES else "en"   # lang comes from the URL: never put raw input in a path
+        audio_file = f"tts/{voice_lang}_{crop}.mp3"
+        audio_path = os.path.join(BASE_DIR, "static", audio_file)
+        if not os.path.exists(audio_path):
+            tmp = f"{audio_path}.{uuid.uuid4().hex}.tmp"   # write-then-rename: no half-written clip is ever served
+            try:
+                os.makedirs(os.path.dirname(audio_path), exist_ok=True)
+                tts_text = f"{t('recommend_title', voice_lang)} {t(crop, voice_lang)}."
+                asyncio.run(generate_audio(tts_text, tmp, VOICES[voice_lang]))
+                os.replace(tmp, audio_path)
+            except Exception as e:  # speech is optional: never lose the recommendation over it
+                print("TTS ERROR:", e)
+                audio_file = None
+                if os.path.exists(tmp):
+                    os.remove(tmp)
 
-        audio_path = os.path.join(BASE_DIR, "static", "result.mp3")
-        asyncio.run(generate_audio(tts_text, audio_path, voice))
-        print("Audio saved successfully!")
-
-        return render_template("index.html", result=result,lang=lang, t=t, crop=crop)
+        return render_template("index.html", result=result, lang=lang, t=t, crop=crop,
+                               audio_file=audio_file, form_data=request.form)
 
     except Exception as e:
         print("ERROR:", e)

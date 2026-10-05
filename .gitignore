@@ -26,6 +26,10 @@ ENV/
 
 # Generated runtime audio & media
 static/*.mp3
+static/tts/
+
+# Research paper drafts, experiments & figures (kept local)
+Researchpaper/
 
 # Logs & temporary files
 *.log
